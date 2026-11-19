@@ -71,6 +71,6 @@ Then create the release by hand with `build/release/Chirp.dmg` and `build/releas
 ## Before the Developer ID certificate exists
 
 `SIGN_IDENTITY="Apple Development" Scripts/release.sh <tag>` makes a build signed with a development certificate and
-not notarized. macOS blocks its first open: people right-click Chirp in Applications and choose **Open** once.
+not notarized. macOS blocks its first open: people click **Open Anyway** in System Settings › Privacy & Security once.
 Permissions survive updates because the signing team stays the same. Updates still check the Sparkle signature.
 Once the Developer ID exists, the next release is notarized and reaches everyone through the updater.

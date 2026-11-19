@@ -46,7 +46,7 @@ Chirp is a free, open-source Mac app for your own words. It lives in a small bar
 ## Install
 
 1. [Download Chirp.dmg](https://github.com/jakeflavin/chirp/releases/latest/download/Chirp.dmg) and drag Chirp to Applications.
-   If macOS says it can't check Chirp for malicious software, right-click Chirp in Applications and choose **Open**. You only need to do this once.
+   This version isn't notarized by Apple yet, so the first time you open it macOS says it can't check Chirp. Click **Done**, open **System Settings › Privacy & Security**, scroll down to "Chirp was blocked", click **Open Anyway** and confirm. You only need to do this once.
 2. Open Chirp. A short setup asks for the permissions each feature needs (microphone, accessibility, and screen and system audio for recording calls). You can skip any of them and turn them on later.
 3. Chirp downloads its models the first time a feature needs them: about 730 MB for speech and 1.6 GB for the language model, plus smaller ones for the voice and search. [Docs/MODELS.md](Docs/MODELS.md) lists every model and where it comes from.
 
