@@ -61,10 +61,11 @@ else
 fi
 
 echo "==> Making the disk image"
-stage=$out/dmg && mkdir -p $stage
-ditto $app $stage/Chirp.app
-ln -s /Applications $stage/Applications
-hdiutil create -volname Chirp -srcfolder $stage -fs APFS -format ULFO -ov $out/Chirp.dmg >/dev/null
+# dmgbuild writes the window's layout (Scripts/dmg) into the image, so Finder doesn't need to be scripted.
+venv=build/dmg-venv
+[[ -x $venv/bin/dmgbuild ]] || { python3 -m venv $venv && $venv/bin/pip install -q dmgbuild==1.6.5; }
+$venv/bin/dmgbuild -s Scripts/dmg/settings.py -D app=$app -D assets=Scripts/dmg Chirp $out/Chirp.dmg >/dev/null 2>&1
+[[ -f $out/Chirp.dmg ]] || { echo "Making the disk image failed."; exit 1; }
 keychain=(); [[ -n ${SIGNING_KEYCHAIN:-} ]] && keychain=(--keychain $SIGNING_KEYCHAIN)
 codesign --sign "$identity" --timestamp $keychain $out/Chirp.dmg
 if (( notarized )); then
@@ -85,5 +86,5 @@ json.dump({"version": version, "build": build, "channel": channel or None,
            "edSignature": fields["sparkle:edSignature"], "length": int(fields["length"]),
            "minimumSystemVersion": "26.0", "notarized": bool(int(notarized))}, open(path, "w"), indent=2)
 EOF
-rm -rf $stage $out/Chirp.zip
+rm -f $out/Chirp.zip
 echo "==> Done: $out/Chirp.dmg and $out/sparkle.json"
