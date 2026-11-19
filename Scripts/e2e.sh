@@ -686,6 +686,10 @@ check "This week counts words dictated and fixes accepted, and leaves out what i
 cmd "home-tip?dismiss=1"; sleep 1
 check "a dismissed tip goes, and nothing takes its place straight away" "d['home']['tip'] == ''"
 check "dictations are left out of Captured today" "d['home']['captured'] == ['article']"
+cmd "menu-bar?show=0"; sleep 2
+check "the menu bar item can be switched off, and Chirp keeps running" "d['library']['showInMenuBar'] == False"
+cmd "menu-bar?show=1"; sleep 2
+check "and on again" "d['library']['showInMenuBar'] == True"
 
 echo "== Home: a word corrected often is offered for the Dictionary"
 cmd "home-tip?quiet=0"; cmd "home-correct?wrong=recieve&right=receive&times=5"; cmd "home-correct?wrong=kubernets&right=Kubernetes&times=2"; sleep 1

@@ -4,6 +4,10 @@ All notable changes to Chirp. Versions follow [Semantic Versioning](https://semv
 
 ## [Unreleased]
 
+## [0.2.1]
+
+- Fixed: turning off **Show Chirp in the menu bar** made Chirp quit.
+
 ## [0.2.0] — first public release
 
 - **Dictate** into any app with a shortcut. Speech is turned into text on your Mac.

@@ -253,8 +253,10 @@ struct ChirpApp: App {
             if (q["show"] == "1") != app.sidebarVisible { app.toggleSidebar() }
         }
         LinkHandler.commands["dock"] = { q in DockPresence.shown = q["show"] != "0" }
+        // `menu-bar?show=0|1`: the "Show Chirp in the menu bar" switch, set the way Settings sets it.
+        LinkHandler.commands["menu-bar"] = { q in UserDefaults.standard.set(q["show"] != "0", forKey: DockPresence.menuBarKey) }
         LinkHandler.stateProviders["library"] = {
-            ["section": app.section.rawValue, "settingsTab": app.settingsTab.rawValue, "showInDock": DockPresence.shown,
+            ["section": app.section.rawValue, "settingsTab": app.settingsTab.rawValue, "showInDock": DockPresence.shown, "showInMenuBar": UserDefaults.standard.object(forKey: DockPresence.menuBarKey) as? Bool ?? true,
              // The checked editor is a test copy's page, not one of the sidebar's.
              "sidebar": LibrarySection.allCases.filter { $0 != .draft && $0 != .folder && $0.isShown }.map(\.rawValue),
              "beta": Beta.isOn, "version": Beta.versionLine,

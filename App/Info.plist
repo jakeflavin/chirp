@@ -57,10 +57,16 @@
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Chirp reads your calendar to name meeting recordings and know who is in them. It never changes your calendar.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Free software under the GNU GPL version 3.</string>
+	<string>Copyright 2026 jakeflavin and contributors. Free software under the GNU GPL version 3.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Chirp listens to your microphone to turn what you say into text. Audio stays on this Mac.</string>
 	<key>NSScreenCaptureUsageDescription</key>
 	<string>Chirp reads the window in front during a recording so its notes get names and numbers right. Nothing leaves this Mac.</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://jakeflavin.github.io/chirp/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>$(SPARKLE_PUBLIC_KEY)</string>
 </dict>
 </plist>

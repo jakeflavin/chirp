@@ -1370,9 +1370,20 @@ final class MenuBarHost: NSObject, NSWindowDelegate {
     /// The stored choice to show the item. On unless turned off.
     private static var inserted: Bool { UserDefaults.standard.object(forKey: DockPresence.menuBarKey) as? Bool ?? true }
 
+    /// The choice last applied to the item, and whether it is being applied now. Changing `isVisible` makes AppKit save
+    /// its own setting, which posts `UserDefaults.didChangeNotification` again from inside the change: without these
+    /// the item would be set over and over until the stack ran out.
+    private var appliedInserted: Bool?
+    private var syncing = false
+
     private func syncInserted() {
-        if item.isVisible != Self.inserted { item.isVisible = Self.inserted }
-        if !item.isVisible { hide() }
+        let wanted = Self.inserted
+        guard !syncing, wanted != appliedInserted else { return }
+        syncing = true
+        defer { syncing = false }
+        appliedInserted = wanted
+        if item.isVisible != wanted { item.isVisible = wanted }
+        if !wanted { hide() }
     }
 
     /// Draws the item for what Chirp is doing, and again whenever that changes.

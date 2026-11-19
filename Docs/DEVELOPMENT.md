@@ -196,7 +196,7 @@ All commands by area (each file's comments give the arguments):
 
 | Area | Commands | Registered in |
 |---|---|---|
-| App and window | `state`, `shot`, `icon`, `settings`, `section`, `seed`, `toast`, `sound-check`, `appearance`, `onboarding`, `onboarding-step`, `options`, `language-size`, `write-card`, `close-main`, `open-main`, `settings-tab`, `open-item`, `transcript`, `window-size`, `sidebar`, `dock` | `Shell/DebugHooks.swift`, `Shell/ChirpApp.swift` |
+| App and window | `state`, `shot`, `icon`, `settings`, `section`, `seed`, `toast`, `sound-check`, `appearance`, `onboarding`, `onboarding-step`, `options`, `language-size`, `write-card`, `close-main`, `open-main`, `settings-tab`, `open-item`, `transcript`, `window-size`, `sidebar`, `dock`, `menu-bar` | `Shell/DebugHooks.swift`, `Shell/ChirpApp.swift` |
 | Features and shortcuts | `features`, `right-option` | `Shell/FeatureSwitches.swift`, `Shell/ShortcutLayout.swift` |
 | Home and onboarding | `home-tip`, `home-seed`, `home-correct`, `home-bird`, `home-fixes`, `onboarding-do` | `Shell/HomeSections.swift` |
 | Menu bar | `menu`, `menu-shot`, `menu-icon` | `Shell/MenuBarPopover.swift` |
