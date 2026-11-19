@@ -1,0 +1,478 @@
+{
+  "about": "Summaries test set. Each input is summarized as if read off the screen (chirp://debug/summarize-here?page=<file>). For each: the key points a good summary must contain (a point counts when every group of words in `any` has one of its words in the summary, ignoring case), the ad and boilerplate lines that must not appear (`ads`: phrases), the title a document should get, and the source's own sections in order (`sections`; empty = no headings, so sections by topic). Inputs s13-s15 are open-source READMEs copied unchanged under their licences (see LICENSES.txt); every other input is a stand-in written for this set.",
+  "items": [
+    {
+      "file": "s01-tech-newsletter.txt", "kind": "newsletter", "persona": "listener",
+      "title": "TLDR 2026-11-16",
+      "points": [
+        {"name": "Orbital raises $410M for Arizona packaging plants", "any": [["Orbital"], ["410"]]},
+        {"name": "Lumen Mobile cuts 600 jobs", "any": [["Lumen"], ["600"]]},
+        {"name": "Leeds liver lobe from stem cells", "any": [["liver"]]},
+        {"name": "Hayate asteroid samples", "any": [["Hayate", "asteroid"]]},
+        {"name": "Postgres 19 vector search", "any": [["Postgres"], ["vector"]]},
+        {"name": "Tallyhome back to server rendering, 3.1s to 0.9s", "any": [["server render", "server-render"]]},
+        {"name": "Team habits not 10x engineers", "any": [["10x", "team habits", "habits"]]},
+        {"name": "Paper planner sales up 18%", "any": [["planner"]]},
+        {"name": "Apple home hub delayed", "any": [["Apple"], ["hub"]]},
+        {"name": "Rust 1.95 async closures", "any": [["Rust"]]}
+      ],
+      "ads": ["Quillstack", "Together With", "Tracewise", "TLDR26", "Sign Up", "View Online", "unsubscribe", "advertise", "credit card"],
+      "sections": ["Big Tech & Startups", "Science & Futuristic Technology", "Programming, Design & Data Science", "Miscellaneous", "Quick Links"]
+    },
+    {
+      "file": "s02-morning-news.txt", "kind": "newsletter", "persona": "listener",
+      "title": "The Daily Kettle",
+      "points": [
+        {"name": "S&P 500 up 0.4%, oil down to $68", "any": [["S&P", "stocks"], ["oil"]]},
+        {"name": "Median rent fell to $1,690, fifth month", "any": [["rent"], ["1,690", "fifth", "3.2"]]},
+        {"name": "Mortgage 6.1% keeps first-time buyers stuck", "any": [["mortgage", "first-time"]]},
+        {"name": "Smart glasses from three companies", "any": [["glasses"]]},
+        {"name": "Privacy: recording light", "any": [["privacy", "recording", "camera"]]},
+        {"name": "UK four-day week trial, 85% keep it", "any": [["four-day"], ["85"]]},
+        {"name": "Riverside FC sacks Tomas Brandt", "any": [["Brandt", "Riverside"]]},
+        {"name": "Library book returned 84 years late", "any": [["library", "84"]]}
+      ],
+      "ads": ["Brightvale", "4.6% APY", "FreshFolk", "KETTLE50", "View in browser", "Forward to a friend", "referral", "tote bag", "unsubscribe", "Member FDIC"],
+      "sections": ["Markets", "Housing", "Tech", "Work", "Sports", "And finally"]
+    },
+    {
+      "file": "s03-essay-newsletter.txt", "kind": "newsletter", "persona": "writer",
+      "title": "Why the best teams plan less than you think",
+      "points": [
+        {"name": "Plan no more than six weeks ahead; bets beyond", "any": [["six weeks", "six-week", "6 weeks"]]},
+        {"name": "One-page write-up before work over three days", "any": [["write-up", "one-page", "one page", "written"]]},
+        {"name": "8 of 40 pages led to cancelling, saving ~4 months", "any": [["eight", "8 of", "four months", "cancel"]]},
+        {"name": "Meetings cut from nine to three", "any": [["meeting"], ["three", "nine", "fewer"]]},
+        {"name": "Lead time 34 to 19 days", "any": [["34", "19 days"]]},
+        {"name": "Incidents 14 to 6; turnover zero", "any": [["incident", "turnover"]]},
+        {"name": "Should have involved support sooner", "any": [["support"]]},
+        {"name": "Written check-ins favoured good writers; template", "any": [["template", "non-native", "write well", "writers"]]}
+      ],
+      "ads": ["Subscribe for free", "reader-supported", "Restack", "Get the app", "Start writing", "Leave a comment", "Unsubscribe"],
+      "sections": ["The six-week horizon", "Writing before building", "Fewer meetings, longer ones", "What the numbers said", "What I would do differently"]
+    },
+    {
+      "file": "s04-email-thread.txt", "kind": "email thread", "persona": "manager",
+      "title": "Warehouse app launch — revised plan",
+      "points": [
+        {"name": "Launch moved from December 1 to January 12", "any": [["January 12", "Jan 12", "January"], ["December 1", "delay", "moved", "moving"]]},
+        {"name": "Dayton pilot continues through December/January 9", "any": [["Dayton"], ["pilot"]]},
+        {"name": "Six warehouses switch on, two per day, by January 14", "any": [["two per day", "two a day", "January 14", "six warehouses", "six remaining"]]},
+        {"name": "Training moves to week of January 5", "any": [["training"], ["January 5", "first week of January"]]},
+        {"name": "Budget stays $186,000", "any": [["186"]]},
+        {"name": "Load test: slow over 180 scanners, 6% failed at 250", "any": [["load test", "scanners"], ["180", "250", "6%", "4 seconds"]]},
+        {"name": "Cause: inventory lookup full table scan; index fix", "any": [["index", "table scan", "inventory lookup"]]},
+        {"name": "Offline sync duplicates scans (23 times)", "any": [["offline", "sync"], ["twice", "duplicate", "23"]]},
+        {"name": "Alex must say by December 4 whether sync fix is ready", "any": [["December 4", "Dec 4", "before Christmas"]]},
+        {"name": "412 staff, 28 sessions", "any": [["412", "28 sessions"]]},
+        {"name": "Spanish guide not ready until December 10", "any": [["Spanish"]]}
+      ],
+      "ads": ["confidential and intended solely", "notify the sender"],
+      "sections": []
+    },
+    {
+      "file": "s05-short-email.txt", "kind": "email", "persona": "second language",
+      "title": "Dentist appointment and the car",
+      "points": [
+        {"name": "Dentist moved to Monday 23rd 10:30", "any": [["dentist", "cleaning"], ["23", "Monday"]]},
+        {"name": "Call back if it does not work / bring insurance card", "any": [["insurance", "555-0142", "call"]]},
+        {"name": "Car at Hillcrest for brakes Saturday until 3 PM", "any": [["brake"], ["Saturday"]]},
+        {"name": "Quote $480", "any": [["480"]]},
+        {"name": "Sunday dinner at 6, bring the chairs", "any": [["dinner", "chairs"]]}
+      ],
+      "ads": ["Sent from my iPhone", "CONFIDENTIALITY NOTICE", "privileged"],
+      "sections": []
+    },
+    {
+      "file": "s06-meeting-notes.md", "kind": "meeting notes", "persona": "manager",
+      "title": "Product sync — November 12, 2026",
+      "points": [
+        {"name": "Dashboard in testing; CSV and time zone bugs fixed by Nov 20", "any": [["CSV", "time zone", "timezone"]]},
+        {"name": "Release date December 3 holds", "any": [["December 3", "Dec 3"]]},
+        {"name": "Empty dashboard links to Connect a data source article", "any": [["empty"], ["data source", "help article", "link"]]},
+        {"name": "Tickets up 22%, Starter plan scheduled reports", "any": [["22", "tickets"], ["Starter"]]},
+        {"name": "Starter gets one free scheduled report, three-month trial", "any": [["free"], ["scheduled report", "trial"]]},
+        {"name": "Pricing: two plans, per active user, draft Dec 1", "any": [["pricing"], ["two plans", "per active user", "Team", "December 1"]]},
+        {"name": "Hiring: QA role, remote Canada", "any": [["QA", "hiring", "Canada"]]},
+        {"name": "Next meeting Nov 19", "any": [["November 19", "Nov 19", "next meeting"]]}
+      ],
+      "ads": [],
+      "sections": ["Q4 release status", "Support load", "Pricing review", "Hiring", "Decisions", "Action items"]
+    },
+    {
+      "file": "s07-quarterly-report.txt", "kind": "report", "persona": "manager",
+      "title": "Harbor Bikes Q3 2026 Business Review",
+      "points": [
+        {"name": "Revenue $14.2M up 18%", "any": [["14.2"]]},
+        {"name": "Net profit $1.1M", "any": [["1.1 million", "$1.1", "profit"]]},
+        {"name": "E-bikes $8.3M / 58%", "any": [["e-bike", "e-bikes"], ["8.3", "58"]]},
+        {"name": "Traditional bikes down 11%", "any": [["traditional", "road bike"]]},
+        {"name": "Harbor Ride 7,020 subscribers at $59", "any": [["Harbor Ride", "subscri"], ["7,020", "59"]]},
+        {"name": "Cancellation 3.4% / payback 25 months", "any": [["3.4", "25 months", "29 months", "cancel"]]},
+        {"name": "Denver store break-even in third month", "any": [["Denver"]]},
+        {"name": "Portland underperforming, lease ends June 2027", "any": [["Portland"]]},
+        {"name": "Boulder store proposal $900,000", "any": [["Boulder"]]},
+        {"name": "Battery supplier Voltaic fire, 30% cut, shortage late January", "any": [["batter"], ["Voltaic", "30%", "supplier", "January"]]},
+        {"name": "Battery plan: premium plus second supplier", "any": [["second supplier", "South Korea", "premium"]]},
+        {"name": "Hiring e-bike mechanics, apprenticeship", "any": [["mechanic", "apprentice"]]},
+        {"name": "Q4 outlook $12.5-13M", "any": [["12.5", "Q4"]]}
+      ],
+      "ads": [],
+      "sections": ["Summary", "Revenue by product line", "Harbor Ride subscriptions", "Stores", "Online sales", "Supply chain and the battery risk", "People", "Outlook for Q4", "Decisions needed"]
+    },
+    {
+      "file": "s08-long-blog-cookies.txt", "kind": "blog post", "persona": "listener",
+      "title": "How I grew 200 pounds of vegetables on a 10-by-30-foot plot",
+      "points": [
+        {"name": "200 pounds from a 10 by 30 plot", "any": [["200"]]},
+        {"name": "No-dig: manure, cardboard, compost each autumn", "any": [["no-dig", "manure", "cardboard", "compost"]]},
+        {"name": "Four beds four feet wide, no wooden sides (slugs)", "any": [["bed"]]},
+        {"name": "Winners: potatoes 62, courgettes 38", "any": [["potato"], ["courgette", "62"]]},
+        {"name": "Gave up sweetcorn and cauliflower", "any": [["sweetcorn", "cauliflower"]]},
+        {"name": "Blight-resistant tomatoes under a roof", "any": [["tomato"]]},
+        {"name": "Succession sowing every three weeks", "any": [["succession", "every three weeks", "little and often"]]},
+        {"name": "Slugs without poison: torch, beer traps, pond with frogs", "any": [["slug"], ["beer", "pond", "frog", "torch"]]},
+        {"name": "Water butts and deep watering twice a week", "any": [["water butt", "rain", "twice a week"]]},
+        {"name": "Costs about $185 vs $430 of vegetables; five hours a week", "any": [["185", "430", "five hours"]]}
+      ],
+      "ads": ["cookies", "Accept all", "Sign up for our free weekly newsletter", "85,000", "Related posts", "Read more", "You might also like", "garden tools under", "Leave a comment", "All rights reserved"],
+      "sections": ["Start with the soil, not the seeds", "Raised beds and paths", "What I grow, and what I gave up on", "Succession sowing", "Dealing with slugs without poison", "Watering", "Costs and time", "What I would tell someone starting out"]
+    },
+    {
+      "file": "s09-blog-no-headings.txt", "kind": "blog post", "persona": "listener",
+      "title": "I sold my car eighteen months ago",
+      "points": [
+        {"name": "Sold car 18 months ago; one adult in two-car household", "any": [["sold"], ["car"]]},
+        {"name": "Car cost about $640 a month", "any": [["640"]]},
+        {"name": "Saved roughly $9,600", "any": [["9,600", "9600"]]},
+        {"name": "E-bike bought second-hand, ridden almost daily", "any": [["e-bike", "electric bike"]]},
+        {"name": "Children take school bus, more independent", "any": [["child", "kids", "school bus"]]},
+        {"name": "Harder: shopping delivered, visiting parents less", "any": [["parents", "delivery", "supermarket", "shopping"]]},
+        {"name": "Bad days: bus did not come, battery died", "any": [["battery", "bus did not", "late"]]},
+        {"name": "Health: lost nine pounds, heart rate 72 to 61", "any": [["health", "heart", "nine pounds", "weight"]]},
+        {"name": "Depends on where you live; keeping one car two more years", "any": [["depends", "where you live", "two years", "recommend"]]}
+      ],
+      "ads": [],
+      "sections": []
+    },
+    {
+      "file": "s10-cli-readme.md", "kind": "technical markdown", "persona": "developer",
+      "title": "tidyshot",
+      "points": [
+        {"name": "Renames, sorts and compresses screenshots", "any": [["screenshot"]]},
+        {"name": "Converts to WebP; 9 GB to 2.1 GB", "any": [["WebP"]]},
+        {"name": "Install with brew or cargo", "any": [["brew", "cargo"]]},
+        {"name": "tidyshot watch / sort --dry-run", "any": [["watch", "dry-run", "dry run"]]},
+        {"name": "Names from app and window title", "any": [["app"], ["name"]]},
+        {"name": "Config file config.toml settings", "any": [["config"]]},
+        {"name": "No internet, does not read contents", "any": [["internet", "privacy", "contents"]]},
+        {"name": "Known issues: CleanShot, large images, systemd", "any": [["CleanShot", "systemd", "8000"]]},
+        {"name": "Undo with tidyshot undo", "any": [["undo"]]}
+      ],
+      "ads": ["img.shields.io", "badge"],
+      "sections": ["Why", "Install", "Usage", "How names are chosen", "Configuration", "Privacy", "Known issues", "FAQ", "Contributing", "License"]
+    },
+    {
+      "file": "s11-docs-page.txt", "kind": "docs page", "persona": "developer",
+      "title": "Webhooks",
+      "points": [
+        {"name": "Webhooks POST events to your URL; 2xx within 10 seconds", "any": [["10 seconds", "2xx"]]},
+        {"name": "Up to 20 endpoints", "any": [["20 webhook", "20 endpoints", "up to 20"]]},
+        {"name": "Create in dashboard or POST /v2/webhooks; choose event types", "any": [["/v2/webhooks", "dashboard", "event types"]]},
+        {"name": "Signing secret whsec_ shown once", "any": [["secret"]]},
+        {"name": "HTTPS only", "any": [["HTTPS"]]},
+        {"name": "Verify HMAC-SHA256 signature; reject older than five minutes; raw body", "any": [["HMAC", "signature"], ["five minutes", "5 minutes", "raw body", "timestamp"]]},
+        {"name": "Retries with backoff for 3 days, then disabled", "any": [["retr"], ["3 days", "three days", "disabled", "backoff"]]},
+        {"name": "Duplicates and order: store ids", "any": [["duplicate", "more than once", "out of order"]]},
+        {"name": "Event types e.g. shipment.delivered, 34 types", "any": [["shipment.delivered", "label.failed", "34", "event types"]]},
+        {"name": "Test locally with parcelo listen / trigger", "any": [["parcelo listen", "CLI", "trigger"]]},
+        {"name": "Best practice: respond fast, background job, roll secret", "any": [["background", "respond quickly", "as soon as"]]}
+      ],
+      "ads": ["Was this page helpful", "Log in", "Sign up", "Cookie preferences", "Previous: Rate limits"],
+      "sections": ["Overview", "Creating a webhook", "Verifying signatures", "Retries and failures", "Event types", "Testing locally", "Best practices"]
+    },
+    {
+      "file": "s12-issue-thread.txt", "kind": "issue thread", "persona": "developer",
+      "title": "Memory leak when streaming large files through the upload API #4182",
+      "points": [
+        {"name": "Memory grows with files over 2 GB in upload_stream", "any": [["upload_stream", "upload"], ["memory"]]},
+        {"name": "Regression in 5.2.0; 5.1.3 fine", "any": [["5.2.0", "regression", "5.1.3"]]},
+        {"name": "Cause: _sent_chunks retry buffer never cleared", "any": [["_sent_chunks", "retry buffer", "never cleared", "chunks"]]},
+        {"name": "Fix: resume from server offset; non-seekable keep up to 4 unconfirmed chunks", "any": [["offset", "seekable"]]},
+        {"name": "Workaround retries=0", "any": [["retries=0", "retries"]]},
+        {"name": "PR #4210 merged; 20 GB file peak 48 MB", "any": [["4210", "48 MB", "merged"]]},
+        {"name": "Ships in 5.2.1, target November 20", "any": [["5.2.1"]]}
+      ],
+      "ads": ["Leave a comment", "contributing guidelines", "👍"],
+      "sections": []
+    },
+    {
+      "file": "s13-swift-huggingface-readme.md", "kind": "technical markdown", "persona": "developer",
+      "title": "Swift Hugging Face",
+      "points": [
+        {"name": "Swift client for Hugging Face Hub and Inference Providers", "any": [["Hub"], ["Inference", "Swift"]]},
+        {"name": "Install with Swift Package Manager", "any": [["Swift Package Manager", "Package.swift", "SPM"]]},
+        {"name": "Optional Xet trait", "any": [["Xet"]]},
+        {"name": "Authentication / tokens", "any": [["token", "authenticat"]]},
+        {"name": "Cache location", "any": [["cache"]]},
+        {"name": "Models, datasets, spaces", "any": [["model"], ["dataset", "space"]]},
+        {"name": "File operations: download/upload", "any": [["download", "upload"]]},
+        {"name": "Pagination", "any": [["pagination", "paginat", "pages"]]},
+        {"name": "Chat completion via inference", "any": [["chat"]]},
+        {"name": "Text-to-image / speech-to-text", "any": [["image", "speech"]]}
+      ],
+      "ads": [],
+      "sections": ["Requirements", "Installation", "Usage", "Contributing", "License"]
+    },
+    {
+      "file": "s14-swift-collections-readme.md", "kind": "technical markdown", "persona": "developer",
+      "title": "Swift Collections",
+      "points": [
+        {"name": "Open-source package of data structures for Swift", "any": [["data structure"]]},
+        {"name": "Deque", "any": [["Deque"]]},
+        {"name": "OrderedSet / OrderedDictionary", "any": [["Ordered"]]},
+        {"name": "BitSet / BitArray", "any": [["Bit"]]},
+        {"name": "Heap", "any": [["Heap"]]},
+        {"name": "TreeSet / TreeDictionary (hash trees)", "any": [["Tree"]]},
+        {"name": "Experimental/unstable traits", "any": [["experimental", "unstable", "trait"]]},
+        {"name": "Source stability / public API", "any": [["public API", "source stab", "semantic version", "stable"]]},
+        {"name": "Minimum Swift toolchain", "any": [["toolchain", "Swift 6", "Swift 5"]]},
+        {"name": "Add as package dependency", "any": [["dependency", "Package.swift", ".package"]]},
+        {"name": "Contributing / branching", "any": [["contribut", "branch"]]}
+      ],
+      "ads": [],
+      "sections": ["Stable Data Structures", "Experimental Features", "Project Status", "Using Swift Collections in your project", "Contributing to Swift Collections", "Code of Conduct", "Contact information"]
+    },
+    {
+      "file": "s15-mlx-swift-lm-readme.md", "kind": "technical markdown", "persona": "developer",
+      "title": "MLX Swift LM",
+      "points": [
+        {"name": "Swift package for LLMs and VLMs on MLX", "any": [["MLX"], ["language model", "LLM", "VLM"]]},
+        {"name": "Documentation links", "any": [["documentation", "docs"]]},
+        {"name": "Installation via Swift Package Manager", "any": [["Package.swift", "Swift Package", "dependency", "SPM"]]},
+        {"name": "Usage: load a model and chat/generate", "any": [["ChatSession", "load", "generate"]]},
+        {"name": "FoundationModels integration", "any": [["FoundationModels", "Foundation Models"]]},
+        {"name": "Contributing", "any": [["contribut"]]}
+      ],
+      "ads": [],
+      "sections": ["Documentation", "Usage", "Installation", "Quick Start", "Package.swift", "FoundationModels integration", "Contributing"]
+    },
+    {
+      "file": "s16-research-paper.txt", "kind": "PDF paper", "persona": "student",
+      "title": "Street Trees and Summer Night Temperatures",
+      "points": [
+        {"name": "1,200 blocks in Chicago, Phoenix, Atlanta, 2024-2025", "any": [["1,200", "1200"]]},
+        {"name": "Sensors on street lamps every ten minutes", "any": [["sensor"]]},
+        {"name": "Over 40% canopy 1.8°C cooler at 3 a.m.", "any": [["1.8"]]},
+        {"name": "Phoenix 2.6, Chicago 1.1", "any": [["Phoenix"], ["2.6", "1.1", "strongest", "largest"]]},
+        {"name": "Heat-wave nights 2.3°C difference", "any": [["heat-wave", "heat wave", "heatwave"], ["2.3", "larger"]]},
+        {"name": "Low-income blocks less than half the canopy (15% vs 34%)", "any": [["income"]]},
+        {"name": "11 more hot nights for low-income residents", "any": [["11 more", "eleven more", "11 nights", "more nights"]]},
+        {"name": "Limitations: observational", "any": [["observational", "limitation", "cannot be certain"]]},
+        {"name": "Target planting at low-canopy, fund watering five years", "any": [["planting", "plant"], ["target", "low-canopy", "low canopy", "watering"]]}
+      ],
+      "ads": ["Page 211", "Page 214", "Page 219", "Page 229"],
+      "sections": ["Abstract", "Introduction", "Methods", "Results", "Discussion", "Conclusion"]
+    },
+    {
+      "file": "s17-lecture-notes.md", "kind": "lecture notes", "persona": "student",
+      "title": "ECON 201 — Lecture 9: Price Elasticity of Demand",
+      "points": [
+        {"name": "Elasticity = % change quantity / % change price", "any": [["percentage change", "% change", "percent"]]},
+        {"name": "Latte example: $4 to $4.40, 500 to 450, elasticity 1", "any": [["latte"]]},
+        {"name": "Elastic, inelastic, unit elastic with examples", "any": [["inelastic"], ["unit"]]},
+        {"name": "Not the same as slope", "any": [["slope"]]},
+        {"name": "Determinants: substitutes, share of income, necessity, time", "any": [["substitute"], ["time", "income", "necessit"]]},
+        {"name": "Revenue rule: elastic price rise lowers revenue; inelastic raises", "any": [["revenue"], ["raise", "lower", "rise", "falls", "increase"]]},
+        {"name": "Transit fares +25%, ridership -8%", "any": [["transit", "fare"]]},
+        {"name": "Tax burden on less elastic side (cigarettes)", "any": [["tax"]]},
+        {"name": "Cross-price and income elasticity", "any": [["cross-price", "cross price", "income elasticity"]]},
+        {"name": "PS4 due Oct 9; midterm Oct 20; office hours Thursday", "any": [["midterm", "Problem Set", "October 9", "office hours"]]}
+      ],
+      "ads": [],
+      "sections": ["What elasticity measures", "Elastic, inelastic and unit elastic", "What makes demand more elastic", "Elasticity and total revenue", "Taxes and who pays them", "Cross-price and income elasticity", "Admin"]
+    },
+    {
+      "file": "s18-book-chapter.md", "kind": "book chapter", "persona": "writer",
+      "title": "Chapter Seven: The Lighthouse Keeper's Ledger",
+      "points": [
+        {"name": "Nora arrives on the island alone by ferry", "any": [["Nora"], ["ferry", "island", "arrive"]]},
+        {"name": "Great-aunt Margaret died; Nora is heir", "any": [["Margaret"]]},
+        {"name": "Duncan Reid meets her; she only wrote letters, never visited", "any": [["Duncan"]]},
+        {"name": "Key for the desk in the lamp room", "any": [["key", "desk"]]},
+        {"name": "Twenty-three ledgers of boats and people from 1984", "any": [["ledger"]]},
+        {"name": "Margaret helped people escape (women fleeing abuse, others)", "any": [["women", "escape", "getting away", "help", "people who needed", "sent on"]]},
+        {"name": "Five hundred people", "any": [["five hundred", "500"]]},
+        {"name": "Nora does not know what to do; invited to the pub to meet people", "any": [["pub", "meet", "know what to do"]]}
+      ],
+      "ads": [],
+      "sections": []
+    },
+    {
+      "file": "s19-research-page.txt", "kind": "research page", "persona": "writer",
+      "title": "Lighthouse automation in Scotland",
+      "points": [
+        {"name": "Northern Lighthouse Board automated lights 1960-1998", "any": [["1960", "1998"]]},
+        {"name": "Keepers worked in threes; rock stations four weeks on", "any": [["keeper"], ["three", "rock station", "four weeks", "shift"]]},
+        {"name": "About 400 keepers in 1950", "any": [["400"]]},
+        {"name": "Little Ross first automated, after a keeper was shot", "any": [["Little Ross"]]},
+        {"name": "Automation cost a fifth as much", "any": [["fifth", "cheaper", "saved money", "cost"]]},
+        {"name": "Keepers offered jobs, redundancy, became attendants", "any": [["attendant", "redundan", "retirement"]]},
+        {"name": "Fair Isle South last, 31 March 1998", "any": [["Fair Isle"]]},
+        {"name": "Houses became holiday homes and museums", "any": [["museum", "holiday"]]}
+      ],
+      "ads": ["Jump to navigation", "needs additional citations", "Creative Commons", "Privacy policy", "Mobile view", "Categories:", "last edited"],
+      "sections": ["Background", "Early automation", "The automation programme", "The last keepers", "Legacy"]
+    },
+    {
+      "file": "s20-tenant-notice-page.txt", "kind": "web page", "persona": "second language",
+      "title": "Rent increases: what your landlord must do",
+      "points": [
+        {"name": "Rent can rise only once in 12 months", "any": [["once"], ["12 months", "12-month", "year"]]},
+        {"name": "90 days written notice", "any": [["90 days", "90-day"]]},
+        {"name": "Text or call not enough; email only if agreed", "any": [["written", "email", "text message"]]},
+        {"name": "Limit 5% plus inflation, max 8%; 7.4% in 2027", "any": [["5%", "8%", "7.4"]]},
+        {"name": "Exemptions: buildings under 15 years, rooms in landlord's home", "any": [["15 years", "exempt", "does not apply"]]},
+        {"name": "Challenge: write to landlord, then Rent Board within 30 days", "any": [["Rent Board", "complaint"]]},
+        {"name": "Keep paying old rent; no eviction for complaining", "any": [["evict", "old rent"]]},
+        {"name": "Tenant Help Line 555-0177, interpreters", "any": [["555-0177", "Help Line", "help line", "interpreter"]]}
+      ],
+      "ads": ["cookies", "Accept optional", "Skip to main content", "Was this page useful", "Report a problem", "Follow us", "Related content"],
+      "sections": ["How often rent can go up", "How much notice you must get", "How much rent can go up", "If you think the increase is too high", "Getting help"]
+    },
+    {
+      "file": "s21-hr-benefits-email.txt", "kind": "email", "persona": "second language",
+      "title": "2027 benefits enrollment closes November 30",
+      "points": [
+        {"name": "Enrollment closes November 30", "any": [["November 30", "Nov 30"]]},
+        {"name": "Plus plan share up about $14 a month; Core unchanged", "any": [["Plus"], ["14", "Core"]]},
+        {"name": "HSA contribution $500 to $750 / $1,000 to $1,500", "any": [["HSA"], ["750", "1,500"]]},
+        {"name": "Vision frames $150 to $200", "any": [["vision", "frame"]]},
+        {"name": "12 free therapy sessions via Calmpath", "any": [["therapy", "Calmpath", "mental health"]]},
+        {"name": "Must re-enroll in HSA and FSA every year", "any": [["re-enroll", "reenroll", "re-enrol", "every year", "roll over"]]},
+        {"name": "Q&A sessions Nov 16 and 19", "any": [["Q&A", "November 16", "November 19"]]}
+      ],
+      "ads": ["do not reply", "not monitored", "benefits-eligible employee"],
+      "sections": []
+    },
+    {
+      "file": "s22-newsletter-read-more.txt", "kind": "newsletter", "persona": "listener",
+      "title": "The Weekly Byte",
+      "points": [
+        {"name": "Ladybird browser alpha, 89% of tests", "any": [["Ladybird", "browser"]]},
+        {"name": "Fair Repair Act passed 61-39; parts for seven years from 2028", "any": [["repair"], ["seven years", "2028", "61", "parts"]]},
+        {"name": "1.5B model matched 20x bigger on coding", "any": [["1.5", "tiny", "small"], ["model"]]},
+        {"name": "Hushnote noise removal tool", "any": [["Hushnote", "noise"]]}
+      ],
+      "ads": ["Cloudnest", "Read more", "Trending this week", "mechanical keyboards", "VS Code extensions", "From the archive", "Forward this email", "Unsubscribe", "View this email"],
+      "sections": []
+    },
+    {
+      "file": "s23-product-announcement.txt", "kind": "blog post", "persona": "manager",
+      "title": "Introducing Offline Mode for Fieldbook",
+      "points": [
+        {"name": "Offline Mode works with no signal and syncs later", "any": [["offline"], ["sync", "signal", "connection"]]},
+        {"name": "Paper notes took 40 minutes a day", "any": [["40 minutes", "paper"]]},
+        {"name": "Downloads next 14 days of inspections", "any": [["14 days"]]},
+        {"name": "Conflicts kept, supervisor chooses", "any": [["supervisor", "both versions", "conflict"]]},
+        {"name": "Pro and Enterprise on iOS and Android at no extra cost; Starter Q1 2027", "any": [["Pro", "Enterprise"], ["iOS", "Android", "no extra cost", "Starter"]]},
+        {"name": "Not on desktop web app", "any": [["desktop", "web app"]]},
+        {"name": "Beta: saved 32 minutes a day; Redline same-day reports", "any": [["32 minutes", "Redline", "beta"]]},
+        {"name": "Next: more than 14 days, offline search, spring", "any": [["search", "next spring", "spring"]]}
+      ],
+      "ads": ["cookies", "I accept", "Manage settings", "Start free trial", "Share this post", "Related articles", "Get the Fieldbook newsletter", "No spam", "All rights reserved"],
+      "sections": ["Why we built it", "What Offline Mode does", "Availability and pricing", "What customers say", "What is next"]
+    },
+    {
+      "file": "s24-school-newsletter.txt", "kind": "newsletter", "persona": "manager",
+      "title": "Maple Grove Weekly — November 13",
+      "points": [
+        {"name": "412 conferences; email teacher if missed", "any": [["conference"]]},
+        {"name": "Picture retake Nov 19", "any": [["retake", "picture"]]},
+        {"name": "No school Nov 25-27", "any": [["Thanksgiving"]]},
+        {"name": "Coat drive until Dec 4", "any": [["coat"]]},
+        {"name": "Car line enters from Pine Avenue from Nov 16", "any": [["car line", "Pine"]]},
+        {"name": "Fourth grade trip Dec 9, $12, forms by Dec 1, volunteers", "any": [["field trip", "Science Discovery", "fourth grade", "fourth graders"]]},
+        {"name": "PTA meeting Nov 20", "any": [["PTA meeting", "November 20", "Nov 20"]]}
+      ],
+      "ads": ["Having trouble viewing", "View it online", "Follow us", "Unsubscribe", "SchoolMessenger"],
+      "sections": []
+    },
+    {
+      "file": "s25-long-article.txt", "kind": "long article", "persona": "listener",
+      "title": "The quiet return of the night train",
+      "points": [
+        {"name": "Vienna-Paris Nightjet sold out; mixed passengers", "any": [["Vienna"], ["Paris"]]},
+        {"name": "Deutsche Bahn closed sleepers in 2016", "any": [["Deutsche Bahn", "2016"]]},
+        {"name": "More than 120 routes now, up from 60 in 2019", "any": [["120"]]},
+        {"name": "Decline causes: budget airlines, high-speed rail, cost, old carriages", "any": [["budget airline", "airlines"], ["high-speed", "cost", "carriage"]]},
+        {"name": "ÖBB took over routes, 1.4M passengers, 33 new trains €700M", "any": [["ÖBB", "OBB", "Nightjet", "Austria"]]},
+        {"name": "Climate: 40 kg vs 7 kg CO2; flight shame", "any": [["CO2", "carbon", "emission", "flight shame", "flygskam", "climate"]]},
+        {"name": "Who rides: 40% leisure, older travellers, families", "any": [["leisure", "families", "over 60", "40%"]]},
+        {"name": "Prices high: €59 couchette to €400 cabin; not enough beds", "any": [["price", "€", "expensive"]]},
+        {"name": "Track access charges vs airlines' untaxed fuel", "any": [["track", "fuel"]]},
+        {"name": "Cross-border approvals, driver changes, timetables", "any": [["border", "timetable", "driver"]]},
+        {"name": "Private operators: European Sleeper; Midnight Trains failed", "any": [["European Sleeper", "Midnight Trains", "private"]]},
+        {"name": "Future: rolling stock, fair competition, reliability (15% late)", "any": [["reliab", "late", "on time", "rolling stock", "new trains"]]}
+      ],
+      "ads": ["Listen to this article", "Sign up for The Long Read newsletter", "Enter your email", "Share this article", "More from The Long Read", "motorway service", "Comments (214)", "Cookie settings", "Advertise"],
+      "sections": ["Why the night train nearly died", "The Austrian gamble", "Climate and the flight-shame effect", "Who rides the night train now", "What it costs, and why prices are rising", "The trouble with timetables", "The private challengers", "Can the revival last?", "Waking up in Paris"]
+    },
+    {
+      "file": "s26-short-blog-ads.txt", "kind": "blog post", "persona": "second language",
+      "title": "How I flew to Lisbon for $212 return",
+      "points": [
+        {"name": "Boston to Lisbon return for $212", "any": [["212"]]},
+        {"name": "Fare alerts set early; usual price ~$650", "any": [["alert"]]},
+        {"name": "Flexible dates (Tuesday out, Wednesday back)", "any": [["flexib", "Tuesday", "dates"]]},
+        {"name": "Carry-on only; checked bag $70 each way", "any": [["bag", "carry-on"]]},
+        {"name": "Catch: 6 a.m./11 p.m. flights, no reclining", "any": [["6 a.m", "11 p.m", "recline", "catch", "no free drinks"]]}
+      ],
+      "ads": ["StayFinder", "$49 a night", "SafeTrip", "Travel insurance", "Advertisement", "Recommended for you", "beaches near Lisbon", "Porto", "Read more", "Sponsored"],
+      "sections": []
+    },
+    {
+      "file": "s27-review-request-email.txt", "kind": "email", "persona": "manager",
+      "title": "A quick reminder to review Ledgerly",
+      "points": [
+        {"name": "Asks for a review", "any": [["review"]]},
+        {"name": "Takes two minutes", "any": [["two minutes", "2 minutes"]]},
+        {"name": "No account needed", "any": [["account"]]},
+        {"name": "Only reminder", "any": [["only reminder", "last reminder", "only one"]]},
+        {"name": "Questions: privacy policy or reply", "any": [["privacy", "reply"]]}
+      ],
+      "ads": ["Unsubscribe", "410 Market Street", "You are receiving this"],
+      "sections": []
+    },
+    {
+      "file": "s28-promo-footer-email.txt", "kind": "promotion email", "persona": "listener",
+      "title": "20% off your first order",
+      "points": [
+        {"name": "20% off first order for new customers", "any": [["20%"], ["new customer"]]},
+        {"name": "Lounge pants back in five colours", "any": [["lounge"]]},
+        {"name": "Free shipping over $50, returns 30 days", "any": [["free shipping", "$50"]]},
+        {"name": "Ends Sunday November 23", "any": [["sunday", "november 23"]]},
+        {"name": "Code COMFY20", "any": [["comfy20"]]}
+      ],
+      "ads": ["do not click", "6050 Washington", "You received this email", "Unsubscribe", "Manage preferences", "View this email", "Follow us"],
+      "sections": []
+    },
+    {
+      "file": "s29-paper-from-pdf.txt", "kind": "PDF paper as text", "persona": "student",
+      "title": "Street Trees and Summer Night Temperatures",
+      "points": [
+        {"name": "1,200 blocks in Chicago, Phoenix, Atlanta, 2024-2025", "any": [["1,200", "1200"]]},
+        {"name": "Sensors on street lamps every ten minutes", "any": [["sensor"]]},
+        {"name": "Over 40% canopy 1.8°C cooler at 3 a.m.", "any": [["1.8"]]},
+        {"name": "Phoenix 2.6, Chicago 1.1", "any": [["Phoenix"], ["2.6", "1.1", "strongest", "largest"]]},
+        {"name": "Heat-wave nights 2.3°C difference", "any": [["heat-wave", "heat wave", "heatwave"], ["2.3", "larger"]]},
+        {"name": "Low-income blocks less than half the canopy (15% vs 34%)", "any": [["income"]]},
+        {"name": "11 more hot nights for low-income residents", "any": [["11 more", "eleven more", "11 nights", "more nights"]]},
+        {"name": "Limitations: observational", "any": [["observational", "limitation", "cannot be certain"]]},
+        {"name": "Target planting at low-canopy, fund watering five years", "any": [["planting", "plant"], ["target", "low-canopy", "low canopy", "watering"]]}
+      ],
+      "ads": ["Page 211", "Page 214", "Page 219", "Page 229", "Vasquez et al", "Journal of Urban Health Studies", "Correspondence", "Received 12 March", "Keywords"],
+      "sections": ["Abstract", "Introduction", "Methods", "Results", "Discussion", "Conclusion"]
+    }
+  ]
+}

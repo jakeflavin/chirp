@@ -1,0 +1,96 @@
+Docs
+Guides
+API Reference
+Changelog
+Status
+Log in
+Sign up
+On this page
+Overview
+Creating a webhook
+Verifying signatures
+Retries and failures
+Event types
+Testing locally
+Best practices
+Webhooks
+Receive real-time notifications when events happen in your Parcelo account.
+
+Overview
+Webhooks let your application receive a message from Parcelo whenever something happens in your account, such as a shipment being delivered or a label failing to print. Instead of asking our API every few minutes whether anything has changed, you give us a URL and we send an HTTP POST request to it as soon as the event happens.
+
+Each request has a JSON body describing the event and a signature header so you can check that the request really came from Parcelo. Your endpoint must reply with a 2xx status code within 10 seconds, or we treat the delivery as failed.
+
+Webhooks are available on all plans. Each account can have up to 20 webhook endpoints.
+
+Creating a webhook
+You can create a webhook in the dashboard under Settings, then Webhooks, or with the API. When you create one, you choose the URL to send events to and the event types you want. If you do not choose any event types, the endpoint receives all of them, which is rarely what you want.
+
+To create a webhook with the API, send a POST request to /v2/webhooks with the URL and a list of event types:
+
+curl https://api.parcelo.com/v2/webhooks \
+  -H "Authorization: Bearer $PARCELO_KEY" \
+  -d url="https://example.com/hooks/parcelo" \
+  -d "events[]=shipment.delivered" \
+  -d "events[]=label.failed"
+
+The response includes a signing secret that starts with whsec_. Store it somewhere safe. It is shown only once; if you lose it, you will need to roll the secret from the dashboard.
+
+Your URL must use HTTPS. We do not send webhooks to plain HTTP addresses or to private IP ranges.
+
+Verifying signatures
+Every webhook request includes a Parcelo-Signature header. It contains a timestamp and an HMAC-SHA256 signature of the timestamp and the raw request body, made with your signing secret.
+
+To verify a request:
+1. Read the timestamp and signature from the header.
+2. Build the signed string by joining the timestamp, a full stop, and the raw body exactly as received.
+3. Compute an HMAC-SHA256 of that string with your signing secret.
+4. Compare your result with the signature using a constant-time comparison.
+5. Reject the request if the timestamp is more than five minutes old, to protect against replay attacks.
+
+Do not parse and re-serialize the JSON before checking the signature. Even a change in spacing will make the signature fail. Our official libraries for Node, Python, Ruby and Go do all of this for you with a single function call.
+
+Retries and failures
+If your endpoint does not respond with a 2xx status within 10 seconds, we retry the delivery. Retries follow an exponential backoff: after 1 minute, 5 minutes, 30 minutes, 2 hours, 6 hours and then every 12 hours, for up to 3 days in total.
+
+If every delivery to an endpoint fails for 3 days, we disable the endpoint and email the account owners. You can re-enable it from the dashboard once it is fixed. Events that were not delivered while it was disabled can be resent from the event log, which keeps events for 30 days.
+
+Webhooks can arrive more than once and out of order. Each event has a unique id; store the ids you have processed and ignore duplicates. Use the created timestamp in the event, not the time you received it, to decide the order of events.
+
+Event types
+The most commonly used event types are:
+shipment.created — a shipment was created, by the API or the dashboard.
+shipment.in_transit — the carrier has scanned the parcel for the first time.
+shipment.delivered — the carrier reports the parcel as delivered.
+shipment.exception — a delivery problem, such as a wrong address or a damaged parcel.
+label.failed — a label could not be created, usually because of an invalid address.
+invoice.paid — your monthly invoice was paid.
+
+The full list of 34 event types is in the API reference.
+
+Testing locally
+Your laptop is not reachable from the internet, so to test webhooks during development use the Parcelo CLI:
+
+parcelo listen --forward-to localhost:3000/hooks/parcelo
+
+The CLI receives events from your test account and forwards them to your local server. It prints a temporary signing secret to use while testing. You can also send a test event at any time:
+
+parcelo trigger shipment.delivered
+
+Test events use fake shipment data and never touch real carriers.
+
+Best practices
+Return a 2xx response as soon as you receive the event, and do the real work afterwards in a background job. Slow endpoints are the most common cause of failed deliveries.
+Only subscribe to the event types you need.
+Keep your signing secret out of source control, and roll it if it may have leaked. After a roll, the old secret keeps working for 24 hours so you can update your servers.
+Monitor the webhook delivery graph in the dashboard. A rising failure rate is usually the first sign of a problem with your endpoint.
+
+Was this page helpful?
+Yes
+No
+Previous: Rate limits
+Next: Idempotency
+© 2026 Parcelo Inc.
+Privacy
+Terms
+Cookie preferences

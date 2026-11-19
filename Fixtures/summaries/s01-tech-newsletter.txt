@@ -1,0 +1,62 @@
+Sign Up | Advertise | View Online
+TLDR
+Together With Quillstack
+TLDR 2026-11-16
+
+Ship docs your users actually read (Sponsor)
+Quillstack turns your OpenAPI spec into a searchable docs site in under five minutes. Teams at 4,000 companies use it to cut support tickets by a third. Start a free 14-day trial, no credit card needed.
+Try Quillstack free
+
+Big Tech & Startups
+
+Orbital raises $410 million to build chip packaging plants in Arizona (3 minute read)
+Orbital Semiconductor has raised $410 million in a Series C led by Halvard Capital. The money will pay for two advanced packaging plants near Phoenix that are expected to open in late 2028 and employ about 1,200 people. Orbital says demand for stacked memory packaging has outgrown what Asian suppliers can deliver.
+
+Lumen Mobile cuts 600 jobs as phone sales slow (2 minute read)
+Lumen Mobile is laying off 600 people, around 9% of its staff, after its flagship phone sold 30% fewer units than forecast. The company will stop making tablets and focus on its two phone lines. The cuts mostly affect marketing and hardware teams in Austin and Taipei.
+
+Science & Futuristic Technology
+
+Researchers grow a working liver lobe from stem cells (4 minute read)
+A team at the University of Leeds grew a small liver lobe that filtered blood in pigs for 72 hours. The tissue was made from a patient's own stem cells on a printed scaffold. The researchers say human trials are at least six years away.
+
+Japan's Hayate probe returns asteroid samples (3 minute read)
+The Hayate capsule landed in the Australian outback on Sunday carrying about 40 grams of material from the asteroid 2019 QX. Scientists hope the dust will show how water reached the early Earth. The samples will be split between labs in Japan, the US and France.
+
+Programming, Design & Data Science
+
+Postgres 19 adds built-in vector search (6 minute read)
+The Postgres 19 beta includes a native vector index type, so many teams will no longer need the pgvector extension. Early benchmarks show query speeds within 10% of pgvector on a million-row table. The final release is planned for September 2027.
+
+Why we moved our frontend back to server rendering (8 minute read)
+An engineer at Tallyhome explains how moving from a single-page app to server-rendered pages cut their median load time from 3.1 seconds to 0.9 seconds. Their bundle shrank by 70%, and the change took a team of four about two months.
+
+The end of the 10x engineer myth (GitHub Repo)
+A widely shared essay argues that team habits, not individual stars, decide how fast software ships. It points to code review speed and small pull requests as the two habits that matter most.
+
+Debug faster with Tracewise (Sponsor)
+Tracewise records every request in production so you can replay bugs locally. Join 20,000 developers who fixed their worst bug in minutes. Get 3 months free with code TLDR26.
+Claim the offer
+
+Miscellaneous
+
+The return of the paper planner (5 minute read)
+Sales of paper planners rose 18% last year, led by buyers under 30. Shoppers told researchers that writing by hand helps them plan without the distractions of a phone.
+
+Quick Links
+
+Apple delays its smart home hub to spring (1 minute read)
+Apple's home hub has been pushed to spring 2027 because of software problems, according to people familiar with the plans.
+
+Rust 1.95 makes async closures stable (2 minute read)
+The new Rust release lets async closures be used without a nightly compiler.
+
+Want to advertise in TLDR? 📰
+If your company is interested in reaching an audience of tech professionals and decision makers, you may want to advertise with us.
+
+If you have any comments or feedback, just respond to this email!
+
+Thanks for reading,
+Dan Ni, Kaylee Moore & Ayush Patel
+
+If you don't want to receive future editions of TLDR, please unsubscribe from TLDR or manage all of your TLDR newsletter subscriptions.

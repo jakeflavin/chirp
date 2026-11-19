@@ -1,0 +1,103 @@
+name: Chirp
+options:
+  bundleIdPrefix: com.jakeflavin
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+  defaultConfig: Debug
+# Versions, the beta channel and signing are in Config/Base.xcconfig (and your own Config/Local.xcconfig).
+configFiles:
+  Debug: Config/Base.xcconfig
+  Release: Config/Base.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    ENABLE_HARDENED_RUNTIME: YES
+    DEAD_CODE_STRIPPING: YES
+    DEBUG_INFORMATION_FORMAT: dwarf
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: YES
+packages:
+  ChirpCore:
+    path: Packages/ChirpCore
+  ChirpML:
+    path: Packages/ChirpML
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts
+    from: 3.1.0
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.10.1
+targets:
+  Chirp:
+    type: application
+    platform: macOS
+    sources:
+      - path: App/Sources
+      - path: App/Resources
+    dependencies:
+      - package: ChirpCore
+      - package: ChirpML
+      - package: KeyboardShortcuts
+      - package: Sparkle
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jakeflavin.chirp
+        PRODUCT_NAME: Chirp
+        # CHIRP_CHANNEL (Config/Base.xcconfig) is the one beta flag: "Beta" sets the BETA compilation condition
+        # (the beta markers) and picks the AppIconBeta icon set, made by Scripts/make-beta-icon.swift.
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) $(CHIRP_CHANNEL:upper)"
+        ASSETCATALOG_COMPILER_APPICON_NAME: "AppIcon$(CHIRP_CHANNEL)"
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_ENTITLEMENTS: App/Chirp.entitlements
+        SWIFT_VERSION: "5.0"
+        OTHER_LDFLAGS: "$(inherited) -L$(PROJECT_DIR)/Rust/lib -lchirp_harper"
+        SWIFT_INCLUDE_PATHS: "$(inherited) $(PROJECT_DIR)/Rust/include"
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Chirp
+        # The version and build come from Config/Base.xcconfig, or from the tag in a release.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.productivity
+        LSMinimumSystemVersion: "26.0"
+        NSMicrophoneUsageDescription: Chirp listens to your microphone to turn what you say into text. Audio stays on this Mac.
+        NSCalendarsFullAccessUsageDescription: Chirp reads your calendar to name meeting recordings and know who is in them. It never changes your calendar.
+        NSAudioCaptureUsageDescription: Chirp records the audio of your calls to make a transcript and notes. Audio stays on this Mac.
+        NSScreenCaptureUsageDescription: Chirp reads the window in front during a recording so its notes get names and numbers right. Nothing leaves this Mac.
+        # Updates (Updater.swift, Docs/RELEASING.md). The key is the public half of the release signing key.
+        SUFeedURL: https://jakeflavin.github.io/chirp/appcast.xml
+        SUPublicEDKey: $(SPARKLE_PUBLIC_KEY)
+        SUEnableAutomaticChecks: true
+        NSHumanReadableCopyright: "Copyright 2026 jakeflavin and contributors. Free software under the GNU GPL version 3."
+        CFBundleURLTypes:
+          - CFBundleURLName: com.jakeflavin.chirp
+            CFBundleURLSchemes: [chirp]
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Documents Chirp can read aloud
+            CFBundleTypeRole: Viewer
+            LSItemContentTypes: [com.adobe.pdf, org.idpf.epub-container, org.openxmlformats.wordprocessingml.document, public.plain-text, public.audio]
+  ChirpUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: App/UITests
+    dependencies:
+      - target: Chirp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jakeflavin.chirp.uitests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Chirp:
+    build:
+      targets:
+        Chirp: all
+        ChirpUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - ChirpUITests

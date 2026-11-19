@@ -1,0 +1,79 @@
+Memory leak when streaming large files through the upload API #4182
+Open
+priyak opened this issue on Oct 3 · 14 comments
+
+priyak commented on Oct 3
+Describe the bug
+When uploading files larger than about 2 GB with `client.upload_stream()`, the memory used by our worker process grows steadily until it is killed by the OOM killer. Smaller files are fine.
+
+To reproduce
+1. Create a 4 GB file: `dd if=/dev/zero of=big.bin bs=1M count=4096`
+2. Upload it with `client.upload_stream(open("big.bin", "rb"), chunk_size=8_000_000)`
+3. Watch the process memory. It grows by roughly the size of the file.
+
+Expected behaviour
+Memory should stay roughly constant, since we are streaming.
+
+Environment
+Library version 5.2.0, Python 3.12, Ubuntu 24.04. Also reproduced on macOS 15.
+
+👍 23
+
+mtorres commented on Oct 4
+Same here on 5.2.0. We downgraded to 5.1.3 and the problem went away, so it looks like a regression.
+
+👍 8
+
+jlee-maintainer commented on Oct 5
+Thanks for the report and the clear reproduction. I can reproduce this on 5.2.0. Labelling as a regression. 5.2.0 added retry support for streamed uploads, so my first suspect is the retry buffer.
+
+jlee-maintainer added the bug and regression labels on Oct 5
+
+ckwon commented on Oct 9
+Any update? This is blocking our upgrade to 5.2, which we need for the new auth flow.
+
+danb commented on Oct 12
+I spent some time on this. The retry logic in `_StreamUploader` keeps every chunk that has been sent in a list called `_sent_chunks`, so that it can resend from the start if the connection drops. That list is never cleared, so the whole file ends up in memory.
+
+The server already supports resuming from an offset (the `Upload-Offset` header), so we should not need to keep old chunks at all. On a retry we could ask the server for its current offset and continue from there, re-reading from the file.
+
+👍 31 🎉 4
+
+jlee-maintainer commented on Oct 13
+@danb great find, that matches what I suspected. Resuming from the server offset is the right fix. One complication: `upload_stream` accepts any file-like object, including ones that cannot seek, such as a pipe from another process. For those we cannot re-read from an offset.
+
+danb commented on Oct 13
+For non-seekable streams we could keep only the chunks the server has not confirmed yet. The server confirms each chunk, so in practice that is at most two or three chunks in flight.
+
+jlee-maintainer commented on Oct 14
+Agreed. Proposal:
+- Seekable streams: keep nothing, resume from the server's offset.
+- Non-seekable streams: keep only unconfirmed chunks, capped at 4 chunks. If more than 4 are unconfirmed, wait before sending more.
+@danb would you like to open a PR? Otherwise I can pick it up next week.
+
+danb commented on Oct 15
+Happy to. I'll have something up by the weekend.
+
+rfernandes commented on Oct 20
+Workaround for anyone stuck: pass `retries=0` to `upload_stream()`. That turns off the retry buffer entirely, so memory stays flat, but you lose automatic retries.
+
+👍 17
+
+danb linked a pull request on Oct 22 that will close this issue: Fix unbounded retry buffer in streamed uploads #4210
+
+jlee-maintainer commented on Oct 28
+#4210 is merged. It will ship in 5.2.1. I tested with a 20 GB file: peak memory was 48 MB, against 20.3 GB on 5.2.0. Thanks again @danb and everyone who tested the branch.
+
+ckwon commented on Nov 2
+When will 5.2.1 be released?
+
+jlee-maintainer commented on Nov 3
+We are waiting on one more fix for a Windows path bug. Target date is November 20. Until then, you can install from main or use the `retries=0` workaround.
+
+👍 5
+
+Write
+Preview
+Leave a comment
+Comment
+Remember, contributions to this repository should follow its contributing guidelines.

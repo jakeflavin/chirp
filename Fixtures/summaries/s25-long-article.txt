@@ -1,0 +1,97 @@
+The Long Read
+Science
+The quiet return of the night train
+Across Europe, sleeper trains that were written off a decade ago are full again. Can they last?
+By Isabel Fournier
+November 8, 2026
+22 min read
+Listen to this article
+
+At 9:52 on a Thursday evening in October, the Nightjet from Vienna to Paris pulled out of Wien Hauptbahnhof with every one of its 412 berths sold. In the six-person couchette compartment I shared, there was a retired couple from Graz going to see their grandson, a cellist on her way to an audition, a software engineer who said he had not flown for work since 2022, and a teenager travelling alone for the first time, clutching a printed ticket her mother had insisted on.
+
+Ten years ago, this train did not exist. Most of Europe's night trains had been cut in the decade before, killed by budget airlines, high-speed rail and the cost of running old carriages. In 2016, Germany's national railway, Deutsche Bahn, closed its last sleeper services, saying they lost €30 million a year. Many observers assumed the night train was finished.
+
+Instead, it has come back. There are now more than 120 regular night train routes in Europe, up from about 60 in 2019. Austria's railway, ÖBB, runs most of them under the Nightjet brand, but new private operators have appeared, and governments from Sweden to Italy are paying for new services. Demand has outrun supply: on popular routes, berths sell out weeks ahead, and prices have risen sharply.
+
+This article looks at why the night train came back, what it costs, who is riding it, and whether the revival can survive its own success.
+
+Why the night train nearly died
+
+The decline of the night train had several causes, and they reinforced each other. The first was the budget airline. In the late 1990s and 2000s, airlines such as Ryanair and easyJet made it possible to fly between European cities for less than the cost of a train ticket, often in under two hours. A night train taking twelve hours could not compete on time, and it rarely competed on price.
+
+The second was high-speed rail. As France, Spain, Germany and Italy built fast lines, many journeys that once needed a night train became daytime trips of four or five hours. Paris to Marseille, once a classic overnight route, became a three-hour day trip.
+
+The third was cost. Night trains are expensive to run. A sleeper carriage holds far fewer passengers than a day carriage, because each person needs a bed. The trains run once a day in each direction, so each carriage earns money only once in 24 hours. And they need staff through the night, as well as cleaning and laundry at each end.
+
+Finally, the old rolling stock was wearing out. Many sleeper carriages in service in 2010 dated from the 1970s and 1980s. Replacing them would have cost hundreds of millions of euros, and most railways decided it was not worth it.
+
+The Austrian gamble
+
+The revival began with a decision that looked foolish at the time. When Deutsche Bahn closed its night trains in 2016, ÖBB, Austria's state railway, bought some of its carriages and took over several routes, including Hamburg to Vienna and Munich to Rome. ÖBB's chief executive at the time argued that night trains could make money if they were run as a network rather than as single lines, with carriages split and joined so that one train could serve several cities.
+
+It worked better than almost anyone expected. Within two years, ÖBB's night trains were carrying 1.4 million passengers a year and covering their costs. The company ordered 33 new trains from Siemens, at a cost of about €700 million, with modern sleeping cabins, couchettes and a new type of "mini cabin", a pod for one person with a bed, a locker and a door that locks.
+
+Climate and the flight-shame effect
+
+The second driver of the revival was climate change. A seat on a night train produces a small fraction of the carbon emissions of the same journey by air: for Vienna to Paris, about 40 kilograms of CO2 per passenger by plane, against roughly 7 kilograms by train, according to an analysis by the European Environment Agency.
+
+In 2018 and 2019, a movement that Swedes called "flygskam", or flight shame, encouraged people to give up flying, and night trains were its natural beneficiary. Several European governments began to subsidise sleeper services as part of their climate plans. France reopened its Paris to Nice night train in 2021 and Paris to Vienna in 2021. Sweden paid for a new night train from Stockholm to Hamburg. The European Commission named 2021 the European Year of Rail and promised to double high-speed rail traffic and triple it by 2050.
+
+The engineer in my compartment was a typical new passenger. His company, a software firm in Vienna, had adopted a rule that any trip under 1,000 kilometres must be made by train. He said that at first he had hated it. Now he preferred it. "I get a full night's sleep, I arrive in the city centre, and I have not lost a day," he said. "The flight is quicker on paper, but not door to door."
+
+Sign up for The Long Read newsletter
+Our best stories, delivered every Sunday. Free for everyone.
+Enter your email address
+Sign up
+
+Who rides the night train now
+
+The passengers on the Vienna to Paris train that night were a fair sample of the new market, according to ÖBB's own surveys. About 40% of night train passengers are travelling for leisure, 25% to visit family, and 20% for work. The rest are students and others. Unlike day trains, night trains attract a large number of passengers aged over 60, who value not having to change trains, and a growing number of families, who find a shared compartment cheaper than a hotel room and a flight.
+
+Many passengers say they enjoy the journey itself. The cellist told me she had flown to auditions for years and always arrived exhausted. "Now I go to sleep in one country and wake up in another," she said. "It is the only time I am not on my phone."
+
+What it costs, and why prices are rising
+
+The problem for passengers is price. A seat in a six-berth couchette on the Vienna to Paris train costs from €59 if bought months ahead, but in a private sleeping cabin for two the price can exceed €400 at busy times. A last-minute flight on the same route often costs less than €100.
+
+Prices are high partly because demand is high and supply is low. ÖBB's new trains have been delayed by more than three years, and the first only entered service in late 2023. In the meantime, many routes run with old carriages that break down often. There are simply not enough beds.
+
+Track access charges are another reason. In most of Europe, train operators pay a fee for every kilometre they use the tracks, and night trains travel long distances. On some routes, these charges make up a third of the ticket price. Airlines, by contrast, pay no tax on fuel for international flights, and in many countries pay no VAT on tickets.
+
+Campaigners argue that this is unfair. Several countries, including Austria and Germany, have cut track charges for night trains, and the European Parliament has called for a common rule. But progress is slow.
+
+The trouble with timetables
+
+Running a train across several countries is still hard. Each country has its own rail operator, its own signalling system, its own electricity supply and its own safety rules. A train from Vienna to Paris has to be approved separately in Austria, Germany and France, and drivers have to change at each border because each needs a licence for that country.
+
+Building a timetable is a further challenge. A night train needs to leave at a sensible evening hour and arrive at a sensible morning hour, ideally between 7 and 9 a.m. But at night many lines are closed for maintenance, and freight trains take priority. In 2023, the Brussels to Berlin night train, run by the private operator European Sleeper, had to be rerouted for weeks because of engineering works, arriving hours late.
+
+The private challengers
+
+European Sleeper, a Dutch and Belgian start-up, is one of several new private operators. It started running between Brussels, Amsterdam and Berlin in 2023, funded partly by thousands of small investors who bought shares online. Its trains use refurbished carriages from the 1950s to the 1980s. Its founders say they will expand to Prague and Barcelona, but they have struggled to find carriages and drivers.
+
+Another newcomer, Midnight Trains, a French start-up that planned luxury hotel-style sleeper trains from Paris, raised millions of euros but announced in 2024 that it was abandoning its plans because it could not find trains to lease. Its failure showed how hard it is to break into the market without state support.
+
+Can the revival last?
+
+The future of the night train depends on three things. The first is new rolling stock. ÖBB's new trains are now arriving at a steady pace, and other railways are ordering similar ones. If enough are built, prices should fall and routes can expand.
+
+The second is fair competition with airlines. If track charges fall and aviation is taxed more fairly, night trains would be far more competitive on price. The EU's planned tax on aviation fuel, if passed, could add €20 to €40 to the cost of a short flight.
+
+The third is reliability. Night trains will only keep their new passengers if they arrive on time. In 2025, ÖBB's night trains arrived more than an hour late on about 15% of journeys, a figure the company admits is too high.
+
+Waking up in Paris
+
+My train arrived at Paris Gare de l'Est at 9:10 the next morning, 25 minutes late. The retired couple from Graz had been up since six, watching the French countryside go by. The teenager was met on the platform by an aunt, who looked relieved. The cellist went straight to her audition.
+
+I had slept, on and off, for about six hours. It was not the best night's sleep of my life. But I had arrived in the centre of Paris, with no queues, no security checks and no transfer from the airport, and I had seen half of Europe through the window. For a growing number of people, that trade is worth making.
+
+Share this article
+More from The Long Read
+The slow death of the motorway service station
+Inside the world's longest bus route
+Why airports are getting bigger and slower
+About the author
+Isabel Fournier is a transport correspondent based in Brussels.
+Comments (214)
+© 2026 The Long Read. All rights reserved. Terms · Privacy · Cookie settings · Advertise

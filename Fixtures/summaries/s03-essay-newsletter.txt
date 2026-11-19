@@ -1,0 +1,61 @@
+Field Notes on Slow Work
+Why the best teams plan less than you think
+Hannah Ortiz
+Nov 14, 2026
+
+Subscribe
+
+Share
+
+Most of the planning I have watched in fifteen years of running software teams was theatre. Quarterly roadmaps were drawn, colour-coded and presented, and by the sixth week most of the items had moved. I do not think planning is useless. I think we plan the wrong things, at the wrong grain, and then we confuse the plan with the work.
+
+This essay is about what I changed when I took over a team of eleven engineers at a logistics company in 2023, and what happened over the following two years.
+
+Thanks for reading Field Notes on Slow Work! Subscribe for free to receive new posts and support my work.
+
+The six-week horizon
+
+The first change was to stop planning further than six weeks ahead in any detail. Beyond six weeks we kept a list of bets, written as one sentence each, with no dates. Inside six weeks, every piece of work had an owner and a written description of what "done" meant.
+
+The team was nervous about this. Our sales team wanted dates for features that were months away. What we gave them instead was a monthly note that said which bets had moved into the six-week window and which had been dropped. After three months the sales lead told me she trusted these notes more than the old roadmap, because they were never wrong for long.
+
+Writing before building
+
+The second change was a rule that any piece of work longer than three days needed a one-page write-up before anyone wrote code. The page answered four questions: what problem are we solving, how will we know it is solved, what are we not doing, and what could go wrong.
+
+I expected pushback, and there was some. But the pages turned out to be fast to write, usually under an hour, and they caught problems early. In the first year, eight of the forty pages written led to the work being cancelled or merged with something else before any code was written. Those eight would have cost us roughly four months of engineering time.
+
+Fewer meetings, longer ones
+
+We cut our standing meetings from nine a week to three. The daily stand-up became a written check-in in a shared channel. What remained were a weekly planning meeting of ninety minutes, a fortnightly demo, and a monthly retrospective.
+
+The planning meeting got longer, not shorter, because it was now where real decisions were made. We stopped going through every ticket. Instead we read the week's write-ups in silence for the first twenty minutes, Amazon style, and then talked only about the ones with open questions.
+
+What the numbers said
+
+I am wary of metrics, but we tracked a few. Over two years, the time from a write-up being approved to the feature reaching customers fell from a median of 34 days to 19 days. The number of incidents caused by our releases fell from 14 in the first year to 6 in the second. Staff turnover on the team was zero in the second year, against a company average of 12%.
+
+None of this proves the method works everywhere. The team was small, the product was mature, and we had a supportive director. But the pattern has held in two other teams I have advised since.
+
+What I would do differently
+
+I waited too long to involve the support team. For the first nine months they found out about changes when customers did. Once we invited a support lead to the fortnightly demo, the number of confused tickets after a release dropped sharply.
+
+I also underestimated how much the written check-ins would favour people who write well. Two engineers, both non-native English speakers, told me later that they had felt judged by the quality of their updates. We moved to a simple three-line template, which helped.
+
+Leave a comment
+
+Field Notes on Slow Work is a reader-supported publication. To receive new posts and support my work, consider becoming a free or paid subscriber.
+
+Subscribe
+
+Like
+Comment
+Restack
+
+© 2026 Hannah Ortiz
+548 Market Street PMB 72296, San Francisco, CA 94104
+Unsubscribe
+
+Get the app
+Start writing

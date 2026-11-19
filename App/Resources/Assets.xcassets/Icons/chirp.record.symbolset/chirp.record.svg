@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!--Chirp icon set. See Docs/DESIGN.md, section 7, Icons.-->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="3300" height="2200">
+ <defs>
+  <style>
+.monochrome-0 {fill:#000000}
+.hierarchical-0:primary {fill:#000000}
+  </style>
+ </defs>
+ <g id="Notes">
+  <rect height="2200" id="artboard" style="fill:white;opacity:1" width="3300" x="0" y="0"/>
+  <text id="template-version" style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 3036 1933)">Template v.3.0</text>
+  <text id="descriptive-name" style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 3036 1953)">chirp.record</text>
+ </g>
+ <g id="Guides">
+  <line id="Baseline-S" x1="263" x2="3036" y1="696" y2="696" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;"/>
+  <line id="Capline-S" x1="263" x2="3036" y1="625.541" y2="625.541" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;"/>
+  <line id="Baseline-M" x1="263" x2="3036" y1="1126" y2="1126" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;"/>
+  <line id="Capline-M" x1="263" x2="3036" y1="1055.54" y2="1055.54" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;"/>
+  <line id="Baseline-L" x1="263" x2="3036" y1="1556" y2="1556" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;"/>
+  <line id="Capline-L" x1="263" x2="3036" y1="1485.54" y2="1485.54" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;"/>
+  <line id="left-margin-Regular-M" x1="1385.12" x2="1385.12" y1="1030.79" y2="1150.12" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;"/>
+  <line id="right-margin-Regular-M" x1="1508.88" x2="1508.88" y1="1030.79" y2="1150.12" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;"/>
+  <line id="left-margin-Medium-M" x1="1681.12" x2="1681.12" y1="1030.79" y2="1150.12" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;"/>
+  <line id="right-margin-Medium-M" x1="1804.88" x2="1804.88" y1="1030.79" y2="1150.12" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;"/>
+  <line id="left-margin-Semibold-M" x1="1977.12" x2="1977.12" y1="1030.79" y2="1150.12" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;"/>
+  <line id="right-margin-Semibold-M" x1="2100.88" x2="2100.88" y1="1030.79" y2="1150.12" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;"/>
+  <line id="left-margin-Bold-M" x1="2273.12" x2="2273.12" y1="1030.79" y2="1150.12" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;"/>
+  <line id="right-margin-Bold-M" x1="2396.88" x2="2396.88" y1="1030.79" y2="1150.12" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;"/>
+ </g>
+ <g id="Symbols">
+  <g id="Regular-M" transform="matrix(1 0 0 1 1447 1126)">
+   <path class="monochrome-0 hierarchical-0:primary" d="M-35.8 -71.03Q-20.97 -85.86 0 -85.86Q20.97 -85.86 35.8 -71.03Q50.62 -56.2 50.62 -35.23Q50.62 -14.26 35.8 0.57Q20.97 15.39 0 15.39Q-20.97 15.39 -35.8 0.57Q-50.62 -14.26 -50.62 -35.23Q-50.62 -56.2 -35.8 -71.03ZM-27.84 -7.39Q-16.31 4.14 0 4.14Q16.31 4.14 27.84 -7.39Q39.38 -18.92 39.38 -35.23Q39.38 -51.54 27.84 -63.07Q16.31 -74.61 0 -74.61Q-16.31 -74.61 -27.84 -63.07Q-39.38 -51.54 -39.38 -35.23Q-39.37 -18.92 -27.84 -7.39ZM-20.62 -35.23Q-20.62 -37.26 -20.23 -39.25Q-19.83 -41.25 -19.06 -43.12Q-18.28 -45 -17.15 -46.69Q-16.02 -48.38 -14.58 -49.81Q-13.15 -51.25 -11.46 -52.38Q-9.77 -53.51 -7.89 -54.29Q-6.02 -55.06 -4.02 -55.46Q-2.03 -55.86 0 -55.86Q4.1 -55.86 7.89 -54.29Q11.68 -52.72 14.58 -49.81Q17.49 -46.91 19.06 -43.12Q20.62 -39.33 20.62 -35.23Q20.62 -31.13 19.06 -27.34Q17.49 -23.55 14.58 -20.65Q11.68 -17.74 7.89 -16.17Q4.1 -14.61 0 -14.61Q-4.1 -14.61 -7.89 -16.17Q-11.68 -17.74 -14.58 -20.65Q-17.49 -23.55 -19.06 -27.34Q-20.62 -31.13 -20.62 -35.23Z"/>
+  </g>
+  <g id="Medium-M" transform="matrix(1 0 0 1 1743 1126)">
+   <path class="monochrome-0 hierarchical-0:primary" d="M-36.2 -71.43Q-21.2 -86.42 0 -86.42Q21.2 -86.42 36.2 -71.43Q51.19 -56.43 51.19 -35.23Q51.19 -14.03 36.2 0.97Q21.2 15.96 0 15.96Q-21.2 15.96 -36.2 0.97Q-51.19 -14.03 -51.19 -35.23Q-51.19 -56.43 -36.2 -71.43ZM-27.44 -7.79Q-16.08 3.58 0 3.58Q16.08 3.58 27.44 -7.79Q38.81 -19.15 38.81 -35.23Q38.81 -51.31 27.44 -62.67Q16.08 -74.04 0 -74.04Q-16.08 -74.04 -27.44 -62.67Q-38.81 -51.31 -38.81 -35.23Q-38.81 -19.15 -27.44 -7.79ZM-14.98 -50.21Q-8.78 -56.42 0 -56.42Q8.78 -56.42 14.98 -50.21Q21.19 -44.01 21.19 -35.23Q21.19 -26.45 14.98 -20.25Q8.78 -14.04 0 -14.04Q-8.78 -14.04 -14.98 -20.25Q-21.19 -26.45 -21.19 -35.23Q-21.19 -44.01 -14.98 -50.21Z"/>
+  </g>
+  <g id="Semibold-M" transform="matrix(1 0 0 1 2039 1126)">
+   <path class="monochrome-0 hierarchical-0:primary" d="M-36.66 -71.89Q-21.47 -87.07 0 -87.07Q21.47 -87.07 36.66 -71.89Q51.84 -56.7 51.84 -35.23Q51.84 -13.76 36.66 1.43Q21.47 16.61 0 16.61Q-21.47 16.61 -36.66 1.43Q-51.84 -13.76 -51.84 -35.23Q-51.84 -56.7 -36.66 -71.89ZM-26.98 -8.25Q-15.8 2.93 0 2.93Q15.8 2.93 26.98 -8.25Q38.16 -19.43 38.16 -35.23Q38.16 -51.03 26.98 -62.21Q15.8 -73.39 0 -73.39Q-15.8 -73.39 -26.98 -62.21Q-38.16 -51.03 -38.16 -35.23Q-38.16 -19.43 -26.98 -8.25ZM-15.45 -50.68Q-9.05 -57.07 0 -57.07Q9.05 -57.07 15.45 -50.68Q21.84 -44.28 21.84 -35.23Q21.84 -26.18 15.45 -19.78Q9.05 -13.39 0 -13.39Q-9.05 -13.39 -15.45 -19.78Q-21.84 -26.18 -21.84 -35.23Q-21.84 -44.28 -15.45 -50.68Z"/>
+  </g>
+  <g id="Bold-M" transform="matrix(1 0 0 1 2335 1126)">
+   <path class="monochrome-0 hierarchical-0:primary" d="M-37.12 -72.35Q-21.75 -87.73 0 -87.73Q21.75 -87.73 37.12 -72.35Q52.5 -56.98 52.5 -35.23Q52.5 -13.48 37.12 1.89Q21.75 17.27 0 17.27Q-21.75 17.27 -37.12 1.89Q-52.5 -13.48 -52.5 -35.23Q-52.5 -56.98 -37.12 -72.35ZM-26.52 -8.71Q-15.53 2.27 0 2.27Q15.53 2.27 26.52 -8.71Q37.5 -19.7 37.5 -35.23Q37.5 -50.76 26.52 -61.75Q15.53 -72.73 0 -72.73Q-15.53 -72.73 -26.52 -61.75Q-37.5 -50.76 -37.5 -35.23Q-37.5 -19.7 -26.52 -8.71ZM-15.91 -51.14Q-9.32 -57.73 0 -57.73Q9.32 -57.73 15.91 -51.14Q22.5 -44.55 22.5 -35.23Q22.5 -25.91 15.91 -19.32Q9.32 -12.73 0 -12.73Q-9.32 -12.73 -15.91 -19.32Q-22.5 -25.91 -22.5 -35.23Q-22.5 -44.55 -15.91 -51.14Z"/>
+  </g>
+ </g>
+</svg>

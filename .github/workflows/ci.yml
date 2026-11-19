@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    # macOS with Xcode 27 (GitHub's xcode-27 image, Apple Silicon).
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Rust build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            Rust/chirp-harper/target
+          key: harper-${{ hashFiles('Rust/chirp-harper/Cargo.lock') }}
+
+      - name: Set up
+        run: Scripts/bootstrap.sh
+
+      - name: Unit tests
+        run: cd Packages/ChirpCore && swift test
+
+      - name: Build the app (unsigned)
+        run: |
+          xcodebuild -project Chirp.xcodeproj -scheme Chirp -configuration Release \
+            -destination 'platform=macOS,arch=arm64' -derivedDataPath .dd \
+            -skipMacroValidation -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO build

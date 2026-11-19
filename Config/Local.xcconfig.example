@@ -1,0 +1,5 @@
+// Copy to Config/Local.xcconfig (it is not committed) and fill in your team to sign builds with your own
+// certificate. Your team id is in Xcode › Settings › Accounts, or developer.apple.com › Membership.
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = Apple Development
+DEVELOPMENT_TEAM = YOUR_TEAM_ID

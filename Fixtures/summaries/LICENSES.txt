@@ -1,0 +1,7 @@
+Three inputs of this test set are open-source READMEs, copied unchanged from the packages Chirp builds with:
+
+s13-swift-huggingface-readme.md  huggingface/swift-huggingface, README.md at f0a0cb4. Apache License 2.0.
+s14-swift-collections-readme.md  apple/swift-collections, README.md at 8875444. Apache License 2.0 (Copyright Apple Inc. and the Swift project authors).
+s15-mlx-swift-lm-readme.md       ml-explore/mlx-swift-lm, README.md at c8dabc63. MIT License, Copyright (c) 2024 ml-explore.
+
+Every other input is a stand-in written for this test set: the people, companies, products and numbers in them are made up.

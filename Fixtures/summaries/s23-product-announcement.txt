@@ -1,0 +1,57 @@
+We value your privacy
+We and our partners use cookies to personalise content and ads and to analyse our traffic. Click "I accept" to agree, or "Manage settings" to choose.
+I accept
+Manage settings
+Products
+Pricing
+Blog
+Customers
+Contact sales
+Sign in
+Start free trial
+Blog / Product updates
+Introducing Offline Mode for Fieldbook
+Jordan Avery, Head of Product
+November 9, 2026 · 5 min read
+
+Today we are releasing the feature our customers have asked for more than any other: Offline Mode. Field teams can now use Fieldbook with no signal at all, and everything they do syncs automatically when they are back online.
+
+Why we built it
+Fieldbook is used by more than 3,000 construction, utilities and environmental teams to record inspections on site. Many of those sites have no mobile signal: basements, tunnels, rural pipelines and wind farms. Until now, inspectors had to write notes on paper and type them up later, which our customers told us took an average of 40 minutes a day per inspector.
+
+What Offline Mode does
+With Offline Mode switched on, the Fieldbook app downloads the forms, checklists and site plans for your next 14 days of scheduled inspections. You can fill in forms, take photos, mark up plans and collect signatures without a connection. A small cloud icon shows how many items are waiting to sync.
+
+When the device reconnects, everything uploads in the background. If two people changed the same inspection while offline, Fieldbook keeps both versions and asks a supervisor to choose, instead of silently overwriting one.
+
+Photos are compressed to about 400 KB each before upload, so a day's work usually syncs in under a minute on a normal mobile connection.
+
+Availability and pricing
+Offline Mode is available today on iOS and Android for customers on the Pro and Enterprise plans at no extra cost. It is coming to the Starter plan in the first quarter of 2027. Admins can switch it on for their team under Settings, then Devices.
+
+The desktop web app does not support Offline Mode, and we have no plans to add it.
+
+What customers say
+During a three-month beta with 45 teams, inspectors saved an average of 32 minutes a day. Redline Utilities, which inspects 1,800 miles of rural gas pipeline, said it cut the time from an inspection to a finished report from two days to the same day.
+
+What is next
+We are working on letting teams download more than 14 days of work at once, and on offline search across past inspections. Both are planned for next spring.
+
+To learn more, join our live demo on November 18 at 1 PM Eastern, or read the help centre guide to Offline Mode.
+
+Share this post
+LinkedIn
+X
+Email
+Related articles
+How Redline Utilities went paperless
+Five inspection checklists you can copy today
+Fieldbook's 2026 security report
+Get the Fieldbook newsletter
+Product news and customer stories, once a month. No spam.
+Your work email
+Subscribe
+© 2026 Fieldbook Inc. All rights reserved.
+Terms
+Privacy
+Status

@@ -1,0 +1,55 @@
+Harbor Bikes Q3 2026 Business Review
+Prepared for the leadership team, October 28, 2026
+
+Summary
+Harbor Bikes had its strongest third quarter on record. Revenue was $14.2 million, up 18% from the same quarter last year and 6% above plan. Growth came almost entirely from e-bikes and the new subscription service, while sales of traditional bikes fell. Gross margin improved to 41%, from 37% a year ago, mainly because we now assemble e-bikes in-house. Operating costs rose faster than planned because of the new Denver store and higher shipping rates. Net profit was $1.1 million, compared with $0.6 million in Q3 2025.
+
+Three things need decisions from this group: whether to open a second Colorado store in 2027, how to respond to the battery supply risk described in section 5, and whether to keep the subscription price at $59 a month.
+
+Revenue by product line
+E-bikes brought in $8.3 million, 58% of revenue, up from 44% a year ago. The Coastline commuter model was the best seller, with 2,140 units sold. The cargo e-bike launched in July sold 610 units, well above the plan of 400, and families with young children make up most of its buyers.
+
+Traditional bikes brought in $3.1 million, down 11% from last year. Road bikes fell the most, by 19%. Kids' bikes held steady. We expect this decline to continue and have cut next year's order of road bikes by a quarter.
+
+Parts, accessories and repairs brought in $1.6 million, up 4%. Repairs grew fastest, at 15%, because more e-bike owners are bringing their bikes in for battery checks and software updates.
+
+The subscription service, Harbor Ride, brought in $1.2 million in its third full quarter. Subscribers pay $59 a month for an e-bike, servicing and theft insurance. We ended the quarter with 7,020 subscribers, up from 4,300 at the end of Q2.
+
+Harbor Ride subscriptions
+Harbor Ride is growing faster than any part of the business, but it is also where we are least sure of the economics. Each subscription bike costs us about $1,450 to buy and prepare, so a subscriber needs to stay for about 25 months before the bike pays for itself. So far, monthly cancellations are 3.4%, which implies an average stay of about 29 months. That is only just enough.
+
+Most cancellations happen in the first three months. Exit surveys say the top reasons are moving away (31%), finding the bike too heavy to carry upstairs (22%), and price (18%). The product team is testing a lighter frame for the next model year.
+
+The pricing question: raising the price to $69 a month would make each subscriber profitable after about 21 months, but customer research suggests sign-ups would fall by 15% to 20%. Finance recommends keeping $59 for new subscribers until at least March and testing $65 in one city first. Marketing would prefer a cheaper annual plan instead.
+
+Stores
+We have nine stores. Same-store sales grew 9%. The Denver store opened on July 18 and reached break-even in its third month, faster than any store before it. It sold more cargo e-bikes than any other store, which we think is because of Denver's new bike lane network.
+
+The Portland store continues to underperform. Its sales fell 6%, and its lease ends in June 2027. The store team recommends moving to a smaller site near the waterfront; the real estate team has found two options and will report in December.
+
+Based on Denver's results, the store team proposes a second Colorado store in Boulder in spring 2027. Opening a store costs about $900,000 including stock. The team expects it to break even within six months.
+
+Online sales
+Online sales were $3.9 million, 27% of revenue, roughly the same share as last year. The new bike finder quiz launched in August raised the share of visitors who buy from 1.8% to 2.3%. Returns of online orders fell to 4% after we added a size guide with video.
+
+Shipping costs rose 14% after our main carrier raised its prices in July. We have started talks with a second carrier and expect to save about $180,000 a year from January.
+
+Supply chain and the battery risk
+All of our e-bike batteries come from one supplier, Voltaic Cells, in Malaysia. In September, Voltaic told us that a fire at one of its plants will cut its output by about 30% until March. We currently have eleven weeks of batteries in stock. If nothing changes, we could run short in late January, which is the start of our spring selling season.
+
+There are three options. We could pay a 12% premium to Voltaic for priority supply, costing about $400,000 over six months. We could qualify a second supplier in South Korea, which would take four to five months and cost about $150,000 in testing. Or we could do both. Operations recommends doing both: the premium covers the gap, and the second supplier reduces the risk for the future.
+
+People
+We ended the quarter with 214 employees, up from 188. Most new hires were in the Denver store and in assembly. Staff turnover in the stores fell to 21% a year from 29%, which we think is because of the pay rise in April. The engagement survey score was 74, up from 68.
+
+We are struggling to hire e-bike mechanics. Four positions have been open for more than three months. HR has started a paid apprenticeship with the Denver Community College, and the first eight apprentices start in January.
+
+Outlook for Q4
+We expect Q4 revenue of $12.5 million to $13 million. Q4 is always slower than Q3 because of the weather, but the holiday season helps accessories and kids' bikes. The forecast assumes no battery shortage before January.
+
+Our main goals for Q4 are to reach 9,000 Harbor Ride subscribers, to sign the second shipping carrier, and to decide on the Boulder store and the battery plan.
+
+Decisions needed
+1. Approve a Boulder store opening in spring 2027 (budget $900,000).
+2. Approve the battery plan: the priority premium with Voltaic and qualifying a second supplier ($550,000 in total).
+3. Agree to keep Harbor Ride at $59 a month for new subscribers until March, with a $65 test in one city.

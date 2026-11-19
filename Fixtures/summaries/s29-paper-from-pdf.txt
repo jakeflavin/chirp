@@ -1,0 +1,84 @@
+Journal of Urban Health Studies, Vol. 41, No. 3 (2026), pp. 211-229
+
+Street Trees and Summer Night Temperatures: Evidence from 1,200 Residential Blocks in Three US Cities
+
+Elena Vasquez¹, Thomas Albright², Grace Mbeki¹
+¹ Department of Environmental Health, Lakeshore University
+² Center for Climate and Cities, Midland Institute of Technology
+
+Abstract
+Heat is the deadliest weather hazard in the United States, and night-time heat is particularly dangerous because it prevents the body from recovering. We measured air temperatures at 1,200 residential blocks in Chicago, Phoenix and Atlanta during the summers of 2024 and 2025, using low-cost sensors mounted on street lamps. Blocks with tree canopy covering more than 40% of the street area were on average 1.8°C cooler at 3 a.m. than blocks with less than 10% canopy, after adjusting for building density, paving and distance to water. The effect was largest in Phoenix (2.6°C) and smallest in Chicago (1.1°C). Low-income blocks had less than half the canopy of high-income blocks in all three cities. Our results suggest that planting street trees in low-canopy neighbourhoods could reduce exposure to dangerous night heat for the people most at risk.
+
+Received 12 March 2026; accepted 2 June 2026
+Correspondence: e.vasquez@lakeshore.example
+Keywords: urban heat island, tree canopy, night-time temperature, environmental justice
+
+1. Introduction
+Extreme heat kills more people in the United States than hurricanes, floods and tornadoes combined. Most heat deaths occur during heat waves in which night temperatures stay high. When nights do not cool below about 24°C, the body cannot shed the heat it built up during the day, and older adults, people with heart disease, and people without air conditioning are most at risk.
+
+Cities make this worse. Asphalt, concrete and brick store heat during the day and release it at night, so urban neighbourhoods can be several degrees warmer than the surrounding countryside after dark. This is known as the urban heat island effect.
+
+Trees are widely promoted as a way to cool cities. Their shade keeps surfaces from heating up, and water evaporating from their leaves cools the air. However, most studies of tree cooling have measured daytime surface temperatures from satellites. Much less is known about how trees affect air temperature at night, at the scale of a single block, which is what matters for the people who live there.
+
+This study asks three questions. First, how much cooler are tree-lined blocks at night? Second, does the effect differ between cities with different climates? Third, is tree canopy distributed fairly between richer and poorer neighbourhoods?
+
+211
+Journal of Urban Health Studies 41(3)
+Vasquez et al. · Street Trees and Night Heat
+
+2. Methods
+2.1 Study sites
+We chose three cities with different climates: Chicago (humid continental), Phoenix (hot desert) and Atlanta (humid subtropical). In each city we selected 400 residential blocks using a stratified random sample, so that blocks with low, medium and high tree canopy, and low, medium and high household income, were all represented.
+
+2.2 Sensors
+At each block we mounted a temperature and humidity sensor on a street lamp at a height of 3 metres, inside a white ventilated shield to protect it from direct sun. The sensors recorded every ten minutes from June 1 to August 31 in both 2024 and 2025. Each sensor cost about $45. Before installation, every sensor was checked against a reference thermometer in a test chamber; sensors that differed by more than 0.3°C were replaced. Over the two summers, 7% of the readings were lost to sensor failures and vandalism.
+
+2.3 Tree canopy and other variables
+We measured tree canopy cover from aerial laser scans (lidar) taken in 2023. For each block we calculated the share of the street area, including sidewalks, covered by canopy taller than 3 metres. We also calculated building density, the share of paved surfaces, and the distance to the nearest large body of water, all of which affect local temperatures. Median household income for each block came from the 2023 American Community Survey.
+
+2.4 Analysis
+Our main outcome was the air temperature at 3 a.m., which is close to the coolest point of the night. We used a mixed-effects regression model with tree canopy, building density, paving and distance to water as predictors, and random effects for each city and each night. We repeated the analysis for heat-wave nights only, defined as nights when the city's official temperature at 3 a.m. was above its 90th percentile.
+
+214
+Journal of Urban Health Studies 41(3)
+Vasquez et al. · Street Trees and Night Heat
+
+3. Results
+3.1 Canopy and night temperature
+Tree canopy varied from 0% to 78% across the 1,200 blocks, with a median of 21%. After adjustment, every 10 percentage points of canopy was associated with a 0.45°C lower temperature at 3 a.m. (95% confidence interval 0.39 to 0.51). Blocks with more than 40% canopy were 1.8°C cooler on average than blocks with less than 10%.
+
+On heat-wave nights the difference was larger: 2.3°C between the high- and low-canopy groups. This matters because heat-wave nights are when the risk to health is greatest.
+
+3.2 Differences between cities
+The cooling effect was strongest in Phoenix, where high-canopy blocks were 2.6°C cooler at 3 a.m. It was 1.9°C in Atlanta and 1.1°C in Chicago. We think the difference is mostly due to humidity: in dry air, evaporation from leaves cools more effectively. Phoenix's trees were also more often irrigated, which keeps them evaporating through the night.
+
+3.3 Who lives under the trees
+In all three cities, canopy was strongly linked to income. Blocks in the highest income third had a median canopy of 34%, against 15% in the lowest income third. In Phoenix the gap was widest, at 29% against 9%. Low-income blocks were also more densely built and more heavily paved, which added to their heat.
+
+Combining these results, residents of low-income blocks were exposed to an average of 11 more nights per summer above 24°C than residents of high-income blocks.
+
+219
+Journal of Urban Health Studies 41(3)
+Vasquez et al. · Street Trees and Night Heat
+
+4. Discussion
+Our results show that street trees are linked to meaningfully cooler nights, not only cooler days. A difference of 2°C may sound small, but studies of heat deaths suggest that each 1°C rise in night temperature during a heat wave increases deaths among older adults by roughly 5%.
+
+The study has limitations. It is observational, so we cannot be certain that trees cause the cooling rather than other features of tree-lined streets that we did not measure, such as front gardens. The sensors measured air temperature at 3 metres, which may differ from temperatures inside homes. And our sample, though large, covers only three cities.
+
+The unequal distribution of trees is a matter of policy. Many cities have pledged to plant more trees, but planting often follows requests from residents, which favours neighbourhoods with more time and resources. We suggest that cities target planting at blocks with low canopy and high heat exposure first, and budget for watering and maintenance for at least five years, since young trees provide little cooling until their crowns grow.
+
+5. Conclusion
+Blocks with dense tree canopy were up to 2.6°C cooler on summer nights, with the largest effects during heat waves and in dry climates. Because low-income neighbourhoods have far fewer trees, they bear more of the burden of night-time heat. Targeted tree planting is a practical way to reduce this inequality.
+
+Acknowledgements
+This work was funded by the Greenway Foundation (grant GF-2023-118). We thank the city lighting departments of Chicago, Phoenix and Atlanta for permission to mount sensors.
+
+References
+1. Anderson GB, Bell ML. Heat waves in the United States: mortality risk during heat waves and effect modification by heat wave characteristics. Environmental Health Perspectives. 2011;119:210-218.
+2. Ziter CD, Pedersen EJ, Kucharik CJ, Turner MG. Scale-dependent interactions between tree canopy cover and impervious surfaces reduce daytime urban heat during summer. PNAS. 2019;116:7575-7580.
+3. Hoffman JS, Shandas V, Pendleton N. The effects of historical housing policies on resident exposure to intra-urban heat. Climate. 2020;8:12.
+
+229
+Journal of Urban Health Studies 41(3)
+Vasquez et al. · Street Trees and Night Heat

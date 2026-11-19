@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest something Chirp should do.
+labels: ["idea"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The task or problem, not the solution yet.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+  - type: dropdown
+    id: feature
+    attributes:
+      label: Which part of Chirp?
+      options:
+        - Dictate
+        - Record (meetings, calls, voice notes)
+        - Write checks (underlines, Fix, Rephrase)
+        - Read aloud
+        - Summarize
+        - Notes and search
+        - Something new
+  - type: markdown
+    attributes:
+      value: Chirp is Mac only, English only, and runs everything on your Mac. Requests that need a server or another platform are out of scope for now.

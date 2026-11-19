@@ -1,0 +1,39 @@
+View this email in your browser
+The Weekly Byte
+Issue #212 · November 13, 2026
+Sponsored by Cloudnest
+Deploy your app in one click with Cloudnest. Free for hobby projects, $20 a month for teams. Get started today.
+
+This week: a new browser engine, the right-to-repair law, and why everyone is talking about tiny language models.
+
+A new browser engine, from scratch
+Ladybird, the independent browser built without Chrome, Firefox or Safari code, released its first public alpha on Tuesday. It runs on Linux and macOS, passes 89% of the standard web platform tests, and is funded entirely by donations. The team of 12 developers says a beta is planned for summer 2027.
+Read more →
+
+Right to repair becomes law
+The Fair Repair Act passed the Senate 61 to 39 on Wednesday. From 2028, makers of phones, laptops and home appliances sold in the US must sell spare parts and repair manuals to the public for at least seven years after a product's release. Apple and Samsung said they would comply. Farm equipment is not covered.
+Read more →
+
+Tiny models, big results
+A research group at the University of Toronto showed that a language model with 1.5 billion parameters, small enough to run on a phone, matched a model 20 times its size on a set of coding tasks, after training on carefully filtered data. The authors say data quality now matters more than size for many tasks.
+Read more →
+
+Trending this week
+How to quit a job gracefully
+The best mechanical keyboards of 2026
+10 VS Code extensions you need
+Why your Wi-Fi is slow
+Read more →
+
+From the archive
+Our 2024 guide to home networking
+The history of the floppy disk
+
+Tool of the week
+Hushnote is a free, open-source app that removes background noise from calls on Linux. It works with any call app and uses less than 2% of a laptop's processor.
+Read more →
+
+Forward this email to a friend
+Did someone forward you this? Subscribe here.
+Unsubscribe · Manage preferences · Privacy policy
+The Weekly Byte, PO Box 1182, Austin, TX 78767

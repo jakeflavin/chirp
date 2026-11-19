@@ -1,0 +1,95 @@
+From: Sofia Ramirez
+To: Alex Morgan; Devon Price; Anika Shah
+Subject: Re: Warehouse app launch — revised plan
+Date: November 16, 2026 at 4:12 PM
+
+Hi all,
+
+Thanks for the quick replies. Pulling everything together so we have one place to look.
+
+Decision: we are moving the launch of the warehouse scanning app from December 1 to January 12. Devon's load test results (below) make it clear we cannot go live during peak season. I spoke to Marcus in operations this afternoon and he agrees, as long as we keep the pilot at the Dayton site running through December.
+
+What changes:
+- The Dayton pilot continues with 40 scanners until January 9.
+- The remaining six warehouses switch on January 12, two per day, finishing January 14.
+- Training sessions move to the week of January 5. Anika will send the new invites by Friday.
+- The budget stays at $186,000. The extra month of pilot support is covered by the contingency line.
+
+Open question for Alex: can your team fix the offline sync bug before Christmas? If not, we need to tell Marcus by December 4 so he can plan for paper backups.
+
+Sofia
+
+-----
+
+From: Devon Price
+To: Sofia Ramirez; Alex Morgan; Anika Shah
+Subject: Re: Warehouse app launch — revised plan
+Date: November 16, 2026 at 11:40 AM
+
+Load test results from last night, as promised.
+
+We simulated 300 scanners hitting the API at once, which is what the Columbus warehouse sees at its busiest hour in December. Response times were fine up to about 180 scanners, then climbed to over 4 seconds. At 250 scanners, about 6% of requests failed outright.
+
+The cause is the inventory lookup, which runs a full table scan for every scan. Adding an index should fix most of it, but I want to rerun the test after the fix, and I do not think we can do that safely and still launch on December 1.
+
+My recommendation is to delay. I would rather launch in January with a system we trust.
+
+Devon
+
+-----
+
+From: Alex Morgan
+To: Sofia Ramirez; Devon Price; Anika Shah
+Subject: Re: Warehouse app launch — revised plan
+Date: November 15, 2026 at 6:05 PM
+
+Quick update from the app side.
+
+The good news: the new barcode reader handles damaged labels much better. In the Dayton pilot, failed scans dropped from 7% to under 2%.
+
+The bad news: we found a bug where scans made while a device is offline are sometimes saved twice when it reconnects. It has happened 23 times in the pilot so far. Nobody has been double-charged, because the billing system catches duplicates, but the stock counts are wrong until someone corrects them by hand.
+
+We think we know the cause, but the fix touches the sync code, which is the riskiest part of the app. I'd estimate two to three weeks including testing.
+
+Alex
+
+-----
+
+From: Anika Shah
+To: Sofia Ramirez; Alex Morgan; Devon Price
+Subject: Re: Warehouse app launch — revised plan
+Date: November 15, 2026 at 2:30 PM
+
+Hi Sofia,
+
+On training: we have 412 warehouse staff to train across the seven sites. Each session is 90 minutes with up to 15 people, so we need at least 28 sessions. My two trainers can run four sessions a day between them.
+
+If the launch stays on December 1, training has to happen during Thanksgiving week, and three of the sites have already said that is impossible. If the launch moves, I would suggest the first week of January.
+
+One more thing: the Spanish-language version of the training guide will not be ready until December 10. About a third of the staff at Columbus and Dayton prefer it.
+
+Anika
+
+-----
+
+From: Sofia Ramirez
+To: Alex Morgan; Devon Price; Anika Shah
+Subject: Warehouse app launch — revised plan
+Date: November 15, 2026 at 9:02 AM
+
+Morning all,
+
+Marcus has asked whether we are still on track for December 1. Before I answer, I need a quick status from each of you:
+
+- Alex: app readiness and anything from the Dayton pilot
+- Devon: the load test you are running tonight
+- Anika: training schedule
+
+Please reply by Monday noon.
+
+Thanks,
+Sofia
+
+Sofia Ramirez | Program Manager, Supply Chain Systems
+Northfield Logistics | 614-555-0198
+This email and any attachments are confidential and intended solely for the addressee. If you have received this email in error please notify the sender immediately and delete it.
