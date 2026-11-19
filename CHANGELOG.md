@@ -4,6 +4,10 @@ All notable changes to Chirp. Versions follow [Semantic Versioning](https://semv
 
 ## [Unreleased]
 
+## [0.2.2]
+
+- The download opens in a designed window that shows where to drag Chirp.
+
 ## [0.2.1]
 
 - Fixed: turning off **Show Chirp in the menu bar** made Chirp quit.
