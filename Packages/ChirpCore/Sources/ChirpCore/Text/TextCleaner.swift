@@ -188,6 +188,8 @@ public struct TextCleaner: Sendable {
     static let spaceAroundBreak = try! NSRegularExpression(pattern: #"[ \t]*\n[ \t]*"#)
     static let leadingMarks = try! NSRegularExpression(pattern: #"(^|\n)[ \t]*[,;:.]+[ \t]*"#)
     static let sentenceStart = try! NSRegularExpression(pattern: #"(^|[.!?]\s+|\n)(\p{Ll})"#)
+    /// "i. e." and "e. g." as speech recognition spells them, with a space after each stop.
+    static let spacedLatin = try! NSRegularExpression(pattern: #"\b([iI])\.\s+([eE])\.|\b([eE])\.\s+([gG])\."#)
 
     /// Settles what the other rules leave behind: doubled spaces and marks, spaces before a mark or
     /// around a line break, a mark left at the start of a line, and a capital at the start of each sentence.
@@ -199,6 +201,10 @@ public struct TextCleaner: Sendable {
         t = spaceAroundBreak.replacing(in: t, with: "\n")
         t = leadingMarks.replacing(in: t, with: "$1")
         t = t.trimmingCharacters(in: .whitespaces)
+        // Written closed up and in lower case, so the stops are not taken for the ends of sentences.
+        t = spacedLatin.replacing(in: t, with: "$1$3.$2$4.").replacingOccurrences(of: "I.E.", with: "i.e.")
+            .replacingOccurrences(of: "E.G.", with: "e.g.").replacingOccurrences(of: "I.e.", with: "i.e.")
+            .replacingOccurrences(of: "E.g.", with: "e.g.")
         // Capitalize the first letter of each sentence.
         let ns = NSMutableString(string: t)
         for m in sentenceStart.matches(in: t, range: NSRange(location: 0, length: ns.length)).reversed() {

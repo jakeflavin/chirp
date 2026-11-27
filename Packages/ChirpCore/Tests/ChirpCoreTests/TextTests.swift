@@ -5,6 +5,13 @@ import Testing
 @Suite struct TextCleanerTests {
     let cleaner = TextCleaner()
 
+    @Test func closesUpSpokenLatinAbbreviations() {
+        #expect(cleaner.clean("if I switch machines, i. e. to a Windows machine, would it work")
+            == "If I switch machines, i.e. to a Windows machine, would it work")
+        #expect(cleaner.clean("bring fruit, e. g. apples") == "Bring fruit, e.g. apples")
+        #expect(cleaner.clean("Use a tool, i.e. a hammer.") == "Use a tool, i.e. a hammer.")
+    }
+
     @Test func removesFillers() {
         #expect(cleaner.clean("Um, I think, uh, we should go.") == "I think, we should go.")
         #expect(cleaner.clean("So um let's start") == "So let's start")
