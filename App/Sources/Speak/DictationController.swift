@@ -156,6 +156,25 @@ enum DictationTarget: Equatable {
     case frontApp
     /// Handed back to Chirp's own window (the "try it" box).
     case inApp
+    /// Into the note open in the perch, a piece at a time as the words are heard (`listenForNote`).
+    /// Never into the app in front.
+    case note
+}
+
+/// What happened when a new note asked to be listened to.
+enum NoteListening: Equatable {
+    /// Listening: the words go into the note as they are heard.
+    case started
+    /// Dictate is switched off.
+    case off
+    /// A dictation, or turning one into text, is already under way.
+    case busy
+    /// macOS has not asked about the microphone yet.
+    case microphoneNotAsked
+    /// The microphone is not allowed.
+    case microphoneDenied
+    /// The microphone could not be opened; the reason has been shown.
+    case failed
 }
 
 /// Runs a dictation from key press to inserted text. What was said is cleaned up by rule
@@ -383,7 +402,8 @@ final class DictationController {
                     "waited": self.lastWaited, "finished": self.finishedCount,
                     "engineRuns": self.models.transcriber.runCount, "workerStarts": self.models.transcriber.workerStarts,
                     "backend": self.models.transcriber.backendNow,
-                    "holdKey": self.holdKey.rawValue, "mode": self.mode.rawValue, "starts": self.startCount]
+                    "holdKey": self.holdKey.rawValue, "mode": self.mode.rawValue, "starts": self.startCount,
+                    "target": "\(self.target)", "forNote": self.isNoteDictation, "handsFree": self.handsFree]
         }
         // Have the speech model in memory before the first dictation, so it starts instantly.
         if Transcriber.isDownloaded, Features.on(.dictate) {
@@ -549,6 +569,67 @@ final class DictationController {
         if phase == .recording { handsFree = true }
     }
 
+    // MARK: Dictating into a new note
+
+    /// Where a note's dictation sends its words, cleaned up, as each piece is ready. Nil when the
+    /// dictation under way is not a note's.
+    private var noteWords: ((String) -> Void)?
+    /// Told once a note's dictation is over: its last words are in, or it was cancelled.
+    private var noteDone: (() -> Void)?
+    /// What a note's dictation has put in so far, cleaned up and as heard, for its history row.
+    private var noteTexts: [String] = []
+    private var noteRaw: [String] = []
+
+    /// True while a note's dictation is listening or putting in its last words.
+    var isNoteDictation: Bool { noteWords != nil }
+
+    /// Starts listening for a new note, hands-free: `words` is given the words a piece at a time while the
+    /// user is still talking, and `done` is told when the last of them are in. The Dictate shortcut, the
+    /// perch's Stop and `finish()` end it as they end any dictation; Escape is left to the note.
+    func listenForNote(words: @escaping (String) -> Void, done: @escaping () -> Void) -> NoteListening {
+        guard Features.on(.dictate) else { return .off }
+        guard phase == .idle else { return .busy }
+        if AudioRecorder.feedFile == nil {
+            switch AVCaptureDevice.authorizationStatus(for: .audio) {
+            case .notDetermined: return .microphoneNotAsked
+            case .denied, .restricted: return .microphoneDenied
+            default: break
+            }
+        }
+        noteWords = words
+        noteDone = done
+        noteTexts = []
+        noteRaw = []
+        start(target: .note)
+        guard phase == .recording else {
+            noteWords = nil
+            noteDone = nil
+            return .failed
+        }
+        handsFree = true
+        return .started
+    }
+
+    /// Cleans up one piece of a note's dictation by rule and hands it to the note.
+    private func deliverNote(_ raw: String) {
+        let heard = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !heard.isEmpty, let words = noteWords else { return }
+        let text = ((try? DictationPipeline(engine: app.engine))?.process(heard, app: .other) ?? heard)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        noteRaw.append(heard)
+        noteTexts.append(text)
+        words(text)
+    }
+
+    /// The note's dictation is over: the note is told, once.
+    private func endNote() {
+        let done = noteDone
+        noteWords = nil
+        noteDone = nil
+        done?()
+    }
+
     // MARK: Lifecycle
 
     /// Starts listening. Asks for the microphone first if macOS has not asked yet, and says why if it cannot start.
@@ -596,8 +677,11 @@ final class DictationController {
                 self.elapsed = self.recorder.duration
             }
         }
-        escapeMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 53 { Task { @MainActor in self?.cancel() } }
+        // Into a note, Escape closes the note and keeps what was said (the perch's own monitors see it).
+        if target != .note {
+            escapeMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+                if event.keyCode == 53 { Task { @MainActor in self?.cancel() } }
+            }
         }
         // Make sure the speech model is loaded by the time the user stops talking, and
         // keep it loaded for as long as this recording lasts.
@@ -647,13 +731,46 @@ final class DictationController {
         decodedSamples = 0
         piecesFailed = false
         nextPieceCheck = 0
-        guard pieceSeconds > 0 else { return }
+        // A note shows its words as they are heard, whatever the setting for long dictations says.
+        let live = target == .note
+        guard pieceSeconds > 0 || live else { return }
         pieceWorker = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(1))
+                try? await Task.sleep(for: .milliseconds(live ? 500 : 1000))
                 guard let self, self.phase == .recording, !Task.isCancelled else { return }
-                await self.transcribeReadyPieces()
+                if live { await self.transcribeLivePiece() } else { await self.transcribeReadyPieces() }
             }
+        }
+    }
+
+    /// For a note: transcribes the phrase just finished, if there is one, and puts its words in the note.
+    private func transcribeLivePiece() async {
+        let from = decodedSamples
+        let run = pieceRun
+        let pending = recorder.samples(from: from)
+        guard !piecesFailed, pending.count >= LiveCut.rate / 2 else { return }
+        guard (try? await models.ensure(.transcription)) != nil, let speech = await models.transcriber.speechSegments(pending) else {
+            // Without voice detection there is nowhere safe to cut: the words all come when listening stops.
+            piecesFailed = true
+            return
+        }
+        guard run == pieceRun, phase != .idle else { return }
+        switch LiveCut().next(speech: speech, samples: pending.count) {
+        case .wait:
+            return
+        case .skip(let cut):
+            decodedSamples = from + min(cut, pending.count)
+        case .transcribe(let cut):
+            let upTo = min(cut, pending.count)
+            let began = Date()
+            guard let piece = try? await models.transcriber.transcribe(Array(pending[..<upTo])) else {
+                piecesFailed = true
+                return
+            }
+            guard run == pieceRun, phase != .idle else { return }
+            decodedSamples = from + upTo
+            Log.write("speak", String(format: "note piece: %.1f s of audio in %.2f s, while listening", Double(upTo) / 16_000, Date().timeIntervalSince(began)))
+            deliverNote(piece.text)
         }
     }
 
@@ -737,8 +854,9 @@ final class DictationController {
         // as listening stops, so a dictation that fails or comes back with no words can still be played
         // and transcribed again.
         let audio = keepAudio ? Self.writeAudio(samples) : nil
+        let forNote = target == .note
         work = Task { [weak self] in
-            await self?.process(samples, run: run, audio: audio)
+            if forNote { await self?.processNote(samples, run: run, audio: audio) } else { await self?.process(samples, run: run, audio: audio) }
         }
     }
 
@@ -785,6 +903,7 @@ final class DictationController {
         if phase == .recording { recorder.stop() }
         endRecordingUI()
         reset()
+        endNote()
     }
 
     /// Takes down what only exists while listening: the clock, the hold on the speech model, the Esc watcher.
@@ -891,7 +1010,7 @@ final class DictationController {
                 if outcome == .copiedOnly {
                     flash("Copied. Press ⌘V to paste. To have Chirp type for you, allow Accessibility in System Settings.", seconds: 6)
                 }
-            case .inApp:
+            case .inApp, .note:
                 break
             }
             // The history comes after the words are on screen. The audio has been on its way since stop.
@@ -911,6 +1030,72 @@ final class DictationController {
         } catch {
             Log.write("speak", "failed: \(error.localizedDescription)")
             // What was said is kept, with no words, so it can be transcribed again.
+            kept = await keepWithoutWords(audio: audio, duration: duration, why: "transcription failed")
+            guard run == pieceRun else { return }
+            flash(error.localizedDescription, seconds: 5)
+        }
+    }
+
+    /// After a note's dictation stops listening: transcribes what the pieces have not covered, puts those
+    /// last words in the note, then keeps the whole dictation in the history as any other is kept.
+    private func processNote(_ samples: [Float], run: Int, audio: Task<String?, Never>?) async {
+        var kept = false
+        defer {
+            finishedCount += 1
+            if !kept, let audio {
+                Task.detached {
+                    if let name = await audio.value { try? FileManager.default.removeItem(at: ChirpStore.audioDirectory.appendingPathComponent(name)) }
+                }
+            }
+            // Only the dictation that still owns the phase goes back to idle; a cancel has told the note already.
+            if run == pieceRun {
+                reset()
+                endNote()
+                startWaitingPress()
+            }
+        }
+        // A piece being transcribed when listening stopped is finished and put in first.
+        let worker = pieceWorker
+        await worker?.value
+        if pieceWorker == worker { pieceWorker = nil }
+        guard run == pieceRun else { return }
+        let duration = Double(samples.count) / 16_000
+        let rest = decodedSamples < samples.count ? Array(samples[decodedSamples...]) : []
+        do {
+            // What is left can be long when nothing could be cut while listening.
+            let plan = LongForm(targetSeconds: Double(max(pieceSeconds, 10)))
+            var from = 0
+            if rest.count > plan.maxSamples, let speech = await models.transcriber.speechSegments(rest) {
+                for cut in plan.cuts(LongForm.candidates(speech: speech, samples: rest.count), samples: rest.count) {
+                    let piece = try await transcribeWithRecovery(Array(rest[from..<cut]))
+                    guard run == pieceRun else { return }
+                    deliverNote(piece.text)
+                    from = cut
+                }
+            }
+            if rest.count - from >= LiveCut.rate / 4 {
+                let piece = try await transcribeWithRecovery(Array(rest[from...]))
+                guard run == pieceRun else { return }
+                deliverNote(piece.text)
+            }
+            lastWaited = Date().timeIntervalSince(stoppedAt)
+            lastSeconds = await models.transcriber.lastProcessingTime
+            let text = LongForm.join(noteTexts)
+            Log.write("speak", String(format: "a note's dictation: %d pieces, %d characters, %.2f s after it stopped", noteTexts.count, text.count, lastWaited))
+            // Nothing said (the user began typing straight away): there is nothing to keep, and nothing to say.
+            guard !text.isEmpty else { return }
+            lastText = text
+            let audioFile: String? = await audio?.value ?? nil
+            try library.save(
+                SavedItem(kind: .dictation, body: text, rawText: LongForm.join(noteRaw), audioFile: audioFile, duration: duration, appBundleID: nil))
+            kept = audioFile != nil
+            try? library.trimDictations(keep: historyLimit)
+            historyVersion += 1
+            if ModelCenter.speechUnloadMinutes == 0, await models.transcriber.holds == 0 { await models.unload(.transcription) }
+        } catch is CancellationError {
+            // Cancelled: nothing more goes in.
+        } catch {
+            Log.write("speak", "a note's dictation failed: \(error.localizedDescription)")
             kept = await keepWithoutWords(audio: audio, duration: duration, why: "transcription failed")
             guard run == pieceRun else { return }
             flash(error.localizedDescription, seconds: 5)

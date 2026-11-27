@@ -128,6 +128,97 @@ final class NoteTextView: NSTextView {
         if let onEscape { onEscape() } else { super.cancelOperation(sender) }
     }
 
+    // MARK: Taking the keyboard
+
+    /// Takes the keyboard once it is in a window (a new note in the perch). The perch is a panel that
+    /// never makes Chirp the active app, so this makes it the key window without activating Chirp.
+    var focusWhenShown = false
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        guard focusWhenShown, window != nil else { return }
+        // After SwiftUI has finished putting the editor in place.
+        DispatchQueue.main.async { [weak self] in self?.takeKeyboard() }
+    }
+
+    /// Makes this editor where typing goes, with the cursor at the end.
+    func takeKeyboard() {
+        guard let window else { return }
+        focusWhenShown = false
+        if !window.isKeyWindow { window.makeKey() }
+        if window.firstResponder !== self {
+            window.makeFirstResponder(self)
+            setSelectedRange(NSRange(location: (string as NSString).length, length: 0))
+        }
+    }
+
+    // MARK: Words heard while the note listens
+
+    /// Told of a key that types (a letter, Space, Return, Delete) before it goes into the note. While the
+    /// note is listening this stops listening, and the key still goes in.
+    var onTypingKey: (() -> Void)?
+
+    override func keyDown(with event: NSEvent) {
+        if Self.types(event) { onTypingKey?() }
+        super.keyDown(with: event)
+    }
+
+    /// A key that puts something in or takes it out, as opposed to moving the cursor, Escape or a ⌘ shortcut.
+    static func types(_ event: NSEvent) -> Bool {
+        guard event.type == .keyDown, event.keyCode != 53 else { return false }
+        if !event.modifierFlags.intersection([.command, .control]).isEmpty { return false }
+        guard let chars = event.characters, let first = chars.unicodeScalars.first else { return false }
+        // Arrows, Home, Page Up and the function keys sit in this private range.
+        return !(0xF700...0xF8FF).contains(first.value)
+    }
+
+    /// Where the next heard words go while the note listens. It starts at the cursor and moves with the
+    /// words put in; typing at it or after it leaves it where it is, so words heard before the typing
+    /// began still go in before what was typed. Nil when the note is not listening.
+    private(set) var liveAnchor: Int?
+
+    /// Starts putting heard words in at `location`, or at the cursor when it is nil.
+    func beginLive(at location: Int?) { liveAnchor = location ?? selectedRange().location }
+    func endLive() { liveAnchor = nil }
+
+    /// Puts heard words in at the live anchor, spaced and capitalised for what is around them. The cursor
+    /// follows them only when it was at the anchor; otherwise it stays with what the user is typing.
+    func insertLive(_ text: String) {
+        guard let anchor = liveAnchor else { return insertDictated(text) }
+        let ns = string as NSString
+        let at = min(anchor, ns.length)
+        let selection = selectedRange()
+        let before = ns.substring(to: at)
+        let after = ns.substring(from: at)
+        let words = Insertion.adapt(text, before: String(before.suffix(200)), after: String(after.prefix(200)))
+        guard !words.isEmpty else { return }
+        let range = NSRange(location: at, length: 0)
+        onDictated?()
+        guard shouldChangeText(in: range, replacementString: words) else { return }
+        replaceCharacters(in: range, with: words)
+        didChangeText()
+        let length = (words as NSString).length
+        liveAnchor = at + length
+        if selection.length == 0, selection.location == at {
+            setSelectedRange(NSRange(location: at + length, length: 0))
+            scrollRangeToVisible(selectedRange())
+        } else if selection.location >= at {
+            setSelectedRange(NSRange(location: selection.location + length, length: selection.length))
+        } else {
+            setSelectedRange(selection)
+        }
+    }
+
+    /// Keeps the live anchor on the same place in the text as the user edits around it.
+    override func shouldChangeText(in range: NSRange, replacementString: String?) -> Bool {
+        let allowed = super.shouldChangeText(in: range, replacementString: replacementString)
+        if allowed, let anchor = liveAnchor, let replacement = replacementString, range.location < anchor {
+            let added = (replacement as NSString).length
+            liveAnchor = NSMaxRange(range) <= anchor ? anchor - range.length + added : range.location + added
+        }
+        return allowed
+    }
+
     /// The line's text from its start up to the cursor.
     private func lineBeforeCursor() -> (line: NSRange, text: String) {
         let ns = string as NSString
@@ -181,14 +272,20 @@ struct NoteEditor: NSViewRepresentable {
     var look: NoteLook = .page
     /// Writing checks run in the note (Settings › Notes › Check writing in notes, and Writing checks on).
     var checks: Bool = true
-    /// While right ⌥ is held over this note: a small listening mark at the cursor.
+    /// While the note listens (right ⌥ held, or a new note listening hands-free): a small mark at the cursor.
     var listening = false
     var level: Double = 0
+    /// The mark's words: "hold ⌥" while the key is held, "listening" while hands-free.
+    var listeningLabel = "hold ⌥"
     /// Takes the keyboard as soon as it is shown.
     var focusOnAppear = false
     var identifier = "note.editor"
     var onEdit: (_ dictated: Bool) -> Void = { _ in }
     var onEscape: (() -> Void)?
+    /// Told of each key that types, before it goes in (see `NoteTextView.onTypingKey`).
+    var onTypingKey: (() -> Void)?
+    /// Given the text view once it is made, for the note that puts heard words into it.
+    var attach: ((NoteTextView) -> Void)?
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -238,12 +335,10 @@ struct NoteEditor: NSViewRepresentable {
         click.delaysPrimaryMouseButtonEvents = false
         view.addGestureRecognizer(click)
         context.coordinator.scheduleCheck(immediately: true)
-        if focusOnAppear {
-            DispatchQueue.main.async {
-                view.window?.makeFirstResponder(view)
-                view.setSelectedRange(NSRange(location: (view.string as NSString).length, length: 0))
-            }
-        }
+        view.onTypingKey = onTypingKey
+        // Taken once the editor is in its window (`viewDidMoveToWindow`), which is after this returns.
+        view.focusWhenShown = focusOnAppear
+        attach?(view)
         return scroll
     }
 
@@ -252,6 +347,7 @@ struct NoteEditor: NSViewRepresentable {
         let checksWere = context.coordinator.parent.checks
         context.coordinator.parent = self
         view.onEscape = onEscape
+        view.onTypingKey = onTypingKey
         if view.string != text {
             view.string = text
             view.undoManager?.removeAllActions()
@@ -259,7 +355,7 @@ struct NoteEditor: NSViewRepresentable {
             context.coordinator.scheduleCheck(immediately: true)
         }
         if checksWere != checks { context.coordinator.scheduleCheck(immediately: true) }
-        context.coordinator.showListening(listening, level: level)
+        context.coordinator.showListening(listening, level: level, label: listeningLabel)
     }
 
     @MainActor
@@ -568,17 +664,17 @@ struct NoteEditor: NSViewRepresentable {
 
         // MARK: Listening
 
-        /// While right ⌥ is held over the note, a small mark at the cursor says the words will go there.
-        func showListening(_ on: Bool, level: Double) {
+        /// While the note listens, a small mark at the cursor says the words will go there.
+        func showListening(_ on: Bool, level: Double, label: String) {
             guard let view = textView else { return }
             if on {
                 if chip == nil {
-                    let host = NSHostingView(rootView: ListeningChip(level: level))
+                    let host = NSHostingView(rootView: ListeningChip(level: level, label: label))
                     host.setAccessibilityLabel("Listening")
                     view.addSubview(host)
                     chip = host
                 }
-                chip?.rootView = ListeningChip(level: level)
+                chip?.rootView = ListeningChip(level: level, label: label)
                 moveChip()
             } else if let chip {
                 chip.removeFromSuperview()
@@ -605,9 +701,10 @@ struct NoteEditor: NSViewRepresentable {
     }
 }
 
-/// The small "listening" mark at a note's cursor while right ⌥ is held.
+/// The small "listening" mark at a note's cursor while it listens.
 struct ListeningChip: View {
     var level: Double
+    var label = "hold ⌥"
 
     var body: some View {
         HStack(spacing: 5) {
@@ -618,7 +715,7 @@ struct ListeningChip: View {
                         .frame(width: 2, height: max(3, 13 * shape * max(0.25, min(1, level * 3))))
                 }
             }
-            Text("hold ⌥").font(.system(size: 11, weight: .medium)).foregroundStyle(Color.onAmber)
+            Text(label).font(.system(size: 11, weight: .medium)).foregroundStyle(Color.onAmber)
         }
         .padding(.horizontal, 7).frame(height: 20)
         .background(Color.amber.opacity(0.85), in: Capsule())

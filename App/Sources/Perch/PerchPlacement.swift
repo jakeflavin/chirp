@@ -563,7 +563,14 @@ extension PerchController {
         if let doc = dropped, !doc.summarizing { dropped = nil }
         hovering = false
         hoverAnchor = nil
+        // The panel becomes the key window without making Chirp the active app; the editor takes the
+        // keyboard itself once it is in the panel. Looked at again a moment later, in case the editor
+        // was not ready or the panel was put back meanwhile, so the user never has to click into it.
         panel.makeKey()
+        Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            self?.notes.focusEditor()
+        }
     }
 
     /// The note was closed: the keyboard goes back, and the bird says where it went.

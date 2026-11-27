@@ -97,7 +97,7 @@ Sections (`ONLY=` values):
 | `read` | Importing documents, the voice, playback, Say it as |
 | `documents` | What is kept with a document, pins and folders, the summary panel and copying, the reading place, a transcribed link |
 | `remember` | Search |
-| `notes` | A note in the perch, a voice note as an editable note, lists, Notes and Meetings as separate switches, the perch's arrangement |
+| `notes` | A note in the perch (typed with Dictate off; listening at once with words shown as heard, typing taking over, closing with the shortcut and Escape), a voice note as an editable note, lists, Notes and Meetings as separate switches, the perch's arrangement |
 | `home` | Home, the menu bar, onboarding, a dropped file, work in progress, stopping notes while they are written |
 | `summaries` | Ads left out, a paper's overview, an email named by its subject, the sentence checker or the rule check without it |
 
