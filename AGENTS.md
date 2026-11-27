@@ -33,6 +33,7 @@ A native Mac app (Swift, SwiftUI, AppKit) that helps with your own words: Dictat
 | Building, running a test copy, debug links | [Docs/DEVELOPMENT.md](Docs/DEVELOPMENT.md) |
 | Tests and fixtures | [Docs/TESTING.md](Docs/TESTING.md) |
 | Versions, channels, CI releases | [Docs/RELEASING.md](Docs/RELEASING.md) |
+| Ideas we might build later | [Docs/IDEAS.md](Docs/IDEAS.md) |
 
 ## Layout
 
