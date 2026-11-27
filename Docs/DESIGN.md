@@ -371,7 +371,8 @@ toolbar groups, the start bar, and a recording's bottom bar. Content stays on Pa
 | `GlassFill` | Value |
 |---|---|
 | `hover` (and a quiet chip) | `Color.primary` 8% |
-| `row` (chosen row) | `Color.primary` 7% |
+| `row` (chosen row, a control's fill at rest) | `Color.primary` 7% |
+| `selected` (picked row of a list on glass: the sidebar) | `Color.primary` 12% |
 | `line` | `Color.primary` 12% |
 | `track` | `Color.primary` 18% |
 

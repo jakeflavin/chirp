@@ -121,6 +121,7 @@ struct LibraryWindow: View {
     @Environment(ReadController.self) private var reader
     @Environment(SearchController.self) private var search
     @Environment(PerchController.self) private var perch
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The saved items in the section being shown, newest first.
     @State private var items: [SavedItem] = []
@@ -205,7 +206,8 @@ struct LibraryWindow: View {
                     .overlay(alignment: .topTrailing) { sidebarButton.padding(.top, 7).padding(.trailing, 8) }
                     .padding(.leading, 8).padding(.vertical, 8)
                     .ignoresSafeArea(.container, edges: .top)
-                    .transition(.move(edge: .leading).combined(with: .opacity))
+                    // With Reduce Motion it fades in and out instead of sliding.
+                    .transition(reduceMotion ? .opacity : .move(edge: .leading).combined(with: .opacity))
             }
             VStack(spacing: 0) {
                 if let banner = app.banner {
@@ -222,6 +224,10 @@ struct LibraryWindow: View {
                 content
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // An error shown in the banner is spoken too, since VoiceOver would not otherwise notice it appear.
+            .onChange(of: app.banner) { _, banner in
+                if let banner { AccessibilityNotification.Announcement(banner).post() }
+            }
         }
         .background(Color.paper.ignoresSafeArea())
         // How wide the window is decides the sidebar below 900, the list's width and the search field.
@@ -410,7 +416,7 @@ struct LibraryWindow: View {
         case (true, true): "Drop a document to read, or audio to transcribe"
         case (true, false): "Drop a document"
         case (false, true): "Drop audio to transcribe"
-        case (false, false): "Nothing that is switched on can take a file"
+        case (false, false): "Turn on Read aloud or Meetings in Settings to add files"
         }
     }
 
@@ -1285,7 +1291,8 @@ private struct SidebarRow: View {
                 }
             }
             .padding(.horizontal, 8).frame(height: 30)
-            .background(selected ? Color.ink.opacity(0.09) : hovering ? Color.ink.opacity(0.045) : .clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            // The sidebar is glass, so its rows use glass fills.
+            .background(selected ? GlassFill.selected : hovering ? GlassFill.hover : .clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -1324,7 +1331,8 @@ private struct FolderRow: View {
                 if count > 0, !hovering { Text("\(count)").font(.system(size: 12)).monospacedDigit().foregroundStyle(Color.quiet) }
             }
             .padding(.horizontal, 8).frame(height: 30)
-            .background(targeted ? Color.amber.opacity(0.3) : selected ? Color.ink.opacity(0.09) : hovering ? Color.ink.opacity(0.045) : .clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(targeted ? Color.amber.opacity(0.3) : selected ? GlassFill.selected : hovering ? GlassFill.hover : .clear,
+                        in: RoundedRectangle(cornerRadius: 9, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -1381,9 +1389,10 @@ private struct FolderField: View {
                 .accessibilityIdentifier("sidebar.folderField")
         }
         .padding(.horizontal, 8).frame(height: 30)
-        .background(Color.card.opacity(0.9), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.ink.opacity(0.16)))
-        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).inset(by: -2).strokeBorder(Color.amber.opacity(0.4), lineWidth: 3))
+        .background(Color.card.opacity(0.9), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(Color.ink.opacity(0.16)))
+        // A focus ring is the system accent (Clay), as on every other field.
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).inset(by: -2).strokeBorder(Color.accentColor.opacity(0.5), lineWidth: 3))
         .onAppear { focused = true }
         .onChange(of: focused) { _, has in if !has { done(name) } }
     }
