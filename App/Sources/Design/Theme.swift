@@ -145,10 +145,14 @@ struct SectionHeading<Trailing: View>: View {
 struct HeadingLink: View {
     let title: String
     let action: () -> Void
+    @State private var hovering = false
 
     var body: some View {
         Button(title, action: action).buttonStyle(.plain)
-            .font(.system(size: 13, weight: .medium)).foregroundStyle(Color.quiet)
+            .font(.system(size: 13, weight: .medium))
+            // Quiet at rest so it never competes with the heading; Ink under the pointer so it reads as a link.
+            .foregroundStyle(hovering ? Color.ink : Color.quiet)
+            .onHover { hovering = $0 }
     }
 }
 
@@ -198,13 +202,14 @@ struct ItemRow<Actions: View>: View {
                 }
             }
             Spacer(minLength: 8)
+            // Hidden by opacity only, so VoiceOver can still reach the row's actions without a pointer.
             actions()
                 .opacity(alwaysShowActions || hovering || selected ? 1 : 0)
-                .accessibilityHidden(!(alwaysShowActions || hovering || selected))
         }
         .frame(minHeight: PageLayout.rowHeight)
         .padding(.horizontal, 10)
-        .background(hovering || selected ? PageLayout.hover : .clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .background(selected ? PageLayout.selected : hovering ? PageLayout.hover : .clear,
+                    in: RoundedRectangle(cornerRadius: 9, style: .continuous))
         .overlay(alignment: .bottom) {
             Rectangle().fill(PageLayout.line).frame(height: 1).padding(.horizontal, 10).opacity(hovering || selected ? 0 : 1)
         }
@@ -212,6 +217,7 @@ struct ItemRow<Actions: View>: View {
         .padding(.horizontal, -10)
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 
@@ -223,7 +229,10 @@ struct ProgressBar: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule().fill(Color.ink.opacity(0.12))
-                Capsule().fill(Color.amber).frame(width: max(0, min(1, value)) * geo.size.width)
+                // Amber alone is too faint on Paper, so the filled part has a thin darker edge.
+                Capsule().fill(Color.amber)
+                    .overlay(Capsule().strokeBorder(Color.onAmber.opacity(0.35), lineWidth: 1))
+                    .frame(width: max(0, min(1, value)) * geo.size.width)
             }
         }
         .frame(height: 4)

@@ -161,6 +161,8 @@ struct SnippetsView: View {
     @Environment(AppModel.self) private var app
     @State private var snippets: [Snippet] = []
     @State private var editing: Snippet?
+    /// The snippet Delete… is asking about.
+    @State private var deleting: Snippet?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -177,7 +179,7 @@ struct SnippetsView: View {
                         ItemRow(title: s.cue, meta: s.text.replacingOccurrences(of: "\n", with: " "), alwaysShowActions: true) {
                             ActButton(title: "Edit") { editing = s }.accessibilityLabel("Edit the snippet \(s.cue)")
                         }
-                        .contextMenu { Button("Delete", role: .destructive) { delete(s) } }
+                        .contextMenu { Button("Delete…", role: .destructive) { deleting = s } }
                     }
                 }
                 .padding(.horizontal, 10).padding(.bottom, 20)
@@ -189,6 +191,17 @@ struct SnippetsView: View {
         .frame(maxWidth: 900, alignment: .leading)
         .padding(.horizontal, PageLayout.gutter)
         .onAppear(perform: reload)
+        .confirmationDialog(
+            deleting.map { "Delete the snippet “\($0.cue)”?" } ?? "",
+            isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let s = deleting { delete(s) }
+                deleting = nil
+            }
+        } message: {
+            Text("Saying its cue no longer types it.")
+        }
         .sheet(item: $editing) { snippet in
             SnippetEditor(snippet: snippet) { saved, delete in
                 if delete { try? app.engine.delete(saved) } else { try? app.engine.save(saved) }
@@ -222,10 +235,10 @@ struct SnippetWays: View {
                         .foregroundStyle(Color.quiet.opacity(0.8)).padding(.horizontal, 5).padding(.vertical, 4)
                     }
                     way("From selected text", "In any app: the perch’s More menu, or the rewrite panel.") {
-                        menuRows(["Rephrase…", "Save as a snippet…", "Style in Mail: Formal"], chosen: 1)
+                        menuRows(["Rephrase…", "Save as a Snippet…", "Style in Mail: Formal"], chosen: 1)
                     }
                     way("From a dictation", "Its menu on the Dictations page.") {
-                        menuRows(["Copy", "Play", "Save as a snippet…"], chosen: 2)
+                        menuRows(["Copy", "Play", "Save as a Snippet…"], chosen: 2)
                     }
                     way("When you repeat yourself", "Chirp suggests it on Dictations. Nothing is saved without you.") {
                         HStack(spacing: 7) {

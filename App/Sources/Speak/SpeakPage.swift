@@ -19,6 +19,8 @@ struct DictationRow: View {
     /// Opens the snippet sheet on this dictation's words.
     var saveAsSnippet: (() -> Void)?
     @State private var hovering = false
+    /// True while Delete… asks before the dictation goes.
+    @State private var confirmingDelete = false
 
     var body: some View {
         HStack(alignment: open ? .top : .center, spacing: 12) {
@@ -46,25 +48,26 @@ struct DictationRow: View {
                 IconButton(symbol: copied ? "chirp.check" : "chirp.copy", label: "Copy", action: copy)
                 Menu {
                     Button("Edit…", action: edit)
-                    if item.rawText != item.body, !item.rawText.isEmpty { Button("Copy the original words") { TextInserter.copy(item.rawText) } }
+                    if item.rawText != item.body, !item.rawText.isEmpty { Button("Copy Original Words") { TextInserter.copy(item.rawText) } }
                     if let file = item.audioFile {
                         Button("Play") { AudioPlayback.shared.toggle(ChirpStore.audioDirectory.appendingPathComponent(file)) }
-                        Button("Transcribe again") { Task { await dictation.retranscribe(item) } }.disabled(dictation.phase != .idle)
+                        Button("Transcribe Again") { Task { await dictation.retranscribe(item) } }.disabled(dictation.phase != .idle)
                     }
                     if let saveAsSnippet, !item.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Button("Save as a snippet…", action: saveAsSnippet)
+                        Button("Save as a Snippet…", action: saveAsSnippet)
                     }
                     Divider()
-                    Button("Delete", role: .destructive) { dictation.delete(item) }
+                    Button("Delete…", role: .destructive) { confirmingDelete = true }
                 } label: {
                     Image("chirp.more").font(.system(size: 13, weight: .medium)).foregroundStyle(Color.ink.opacity(0.8))
                         .frame(width: 28, height: 28).contentShape(Circle())
                 }
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
-                .accessibilityLabel("More")
+                .help("More")
+                .accessibilityLabel("More for \(item.title.isEmpty ? "this dictation" : item.title)")
             }
+            // Hidden by opacity only, so VoiceOver can still reach Copy and More without a pointer.
             .opacity(hovering || onCursor ? 1 : 0)
-            .accessibilityHidden(!(hovering || onCursor))
         }
         .padding(.vertical, open ? 9 : 0)
         .frame(minHeight: PageLayout.rowHeight)
@@ -79,12 +82,17 @@ struct DictationRow: View {
         .contextMenu {
             Button("Copy", action: copy)
             Button("Edit…", action: edit)
-            if item.rawText != item.body { Button("Copy the original words") { TextInserter.copy(item.rawText) } }
+            if item.rawText != item.body, !item.rawText.isEmpty { Button("Copy Original Words") { TextInserter.copy(item.rawText) } }
             if let saveAsSnippet, !item.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Button("Save as a snippet…", action: saveAsSnippet)
+                Button("Save as a Snippet…", action: saveAsSnippet)
             }
             Divider()
+            Button("Delete…", role: .destructive) { confirmingDelete = true }
+        }
+        .confirmationDialog("Delete this dictation?", isPresented: $confirmingDelete) {
             Button("Delete", role: .destructive) { dictation.delete(item) }
+        } message: {
+            Text(item.deleteWarning)
         }
         .accessibilityElement(children: .contain)
     }
