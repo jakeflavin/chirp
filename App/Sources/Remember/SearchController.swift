@@ -161,8 +161,10 @@ final class SearchController {
     ) async -> [SemanticSearch.Result] {
         var semantic: [SemanticSearch.PassageHit] = []
         var items: [Int64: SavedItem] = [:]
-        var ready = byMeaning && models.state(.search) == .loaded
-        if byMeaning, !ready, meaningAvailable { ready = (try? await models.ensure(.search)) != nil }
+        // With every feature that saves items switched off, the search model stays put away.
+        let wanted = byMeaning && Features.shared.set.needs(.search)
+        var ready = wanted && models.state(.search) == .loaded
+        if wanted, !ready, meaningAvailable { ready = (try? await models.ensure(.search)) != nil }
         let asked = Date()
         if ready {
             let vector = try? await embedder.embed([q], asQuery: true).first

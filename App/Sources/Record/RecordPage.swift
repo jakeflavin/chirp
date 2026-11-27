@@ -187,9 +187,11 @@ struct TranscriptTimeline: View {
     private func said(_ line: TranscriptSegment, lit: Bool) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text(line.start.clock).font(.system(size: 12)).monospacedDigit().foregroundStyle(Color.quiet).frame(width: 40, alignment: .leading)
-            (Text(names ? (line.speaker == "Me" ? "You" : line.speaker) + "  " : "").fontWeight(.semibold)
-                .foregroundStyle(line.speaker == "Me" ? Color.ink : Color.grammar)
-                + Text(line.text).foregroundStyle(Color.ink.opacity(0.86)))
+            Text("""
+                \(Text(names ? (line.speaker == "Me" ? "You" : line.speaker) + "  " : "").fontWeight(.semibold)
+                .foregroundStyle(line.speaker == "Me" ? Color.ink : Color.grammar))\
+                \(Text(line.text).foregroundStyle(Color.ink.opacity(0.86)))
+                """)
                 .font(.system(size: 13)).lineSpacing(3).textSelection(.enabled)
                 .padding(.horizontal, lit ? 3 : 0)
                 .background(lit ? Color.amber.opacity(0.24) : .clear, in: RoundedRectangle(cornerRadius: 4))
@@ -479,7 +481,11 @@ struct MeetingDetail: View {
             SectionHeading("With this recording", count: context.screens.count + min(4, context.links.count))
             ForEach(context.links.prefix(4), id: \.self) { link in
                 if let url = URL(string: link) {
-                    Link(destination: url) { Label(url.host() ?? link, image: "chirp.link").font(.system(size: 13)).lineLimit(1) }
+                    // Ink and underlined: Clay at this size is too faint to read on Paper.
+                    Link(destination: url) {
+                        Label(url.host() ?? link, image: "chirp.link").font(.system(size: 13)).lineLimit(1)
+                            .foregroundStyle(Color.ink).underline()
+                    }
                 }
             }
             if !context.screens.isEmpty {
@@ -671,6 +677,8 @@ struct PlaybackDock: View {
             row(scrubber: 60, time: false, back: false, total: false)
         }
         .onAppear { length = playback.length(of: url) }
+        // Space plays or pauses, but not while the title or a note is being typed.
+        .playbackKeys([.playPause]) { _ in playback.playPause(url) }
     }
 
     private func row(scrubber: CGFloat, time showsTime: Bool, back: Bool = true, total showsTotal: Bool = true) -> some View {
@@ -678,7 +686,6 @@ struct PlaybackDock: View {
             IconButton(symbol: mine && playback.isPlaying ? "chirp.pause" : "chirp.play", label: mine && playback.isPlaying ? "Pause" : "Play", size: 34, active: true) {
                 playback.playPause(url)
             }
-            .keyboardShortcut(.space, modifiers: [])
             .accessibilityIdentifier("meeting.play")
             if back { IconButton(symbol: "chirp.back15", label: "Back 15 seconds", size: 34) { playback.seek(url, to: time - 15) } }
             Scrubber(value: total > 0 ? time / total : 0, marks: total > 0 ? marks.map { $0 / total } : []) { fraction in
@@ -767,7 +774,7 @@ private struct ScreenThumbnail: View {
             }
             .frame(width: 150, height: 94).clipShape(RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.ink.opacity(0.1)))
-            Text("\(screen.at.clock) · \(screen.app)").font(.caption).foregroundStyle(Color.quiet).lineLimit(1).frame(width: 150, alignment: .leading)
+            Text("\(screen.at.clock) · \(screen.app)").font(.rowMeta).foregroundStyle(Color.quiet).lineLimit(1).frame(width: 150, alignment: .leading)
         }
         .contentShape(Rectangle())
         .onTapGesture { if let url { NSWorkspace.shared.open(url) } }

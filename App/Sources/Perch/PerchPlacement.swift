@@ -121,7 +121,7 @@ extension PerchController {
     /// From the screen's edge to the perch.
     static let margin: CGFloat = 12
     /// How much of a tucked perch still shows.
-    static let sliver: CGFloat = 12
+    nonisolated static let sliver: CGFloat = 12
     /// A dragged perch settles into a landing spot from this far away.
     static let snapDistance: CGFloat = 120
 
@@ -563,12 +563,37 @@ extension PerchController {
         if let doc = dropped, !doc.summarizing { dropped = nil }
         hovering = false
         hoverAnchor = nil
+        // The panel becomes the key window without making Chirp the active app; the editor takes the
+        // keyboard itself once it is in the panel. Looked at again a moment later, in case the editor
+        // was not ready or the panel was put back meanwhile, so the user never has to click into it.
         panel.makeKey()
+        Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard let self, self.notes.isOpen else { return }
+            self.notes.focusEditor()
+            // macOS can refuse the key window to an app in the background. Then Chirp comes forward for as
+            // long as the note is open, and the app the user was in comes back when it closes.
+            if !self.panel.isKeyWindow, !NSApp.isActive {
+                self.cameForward = NSWorkspace.shared.frontmostApplication
+                NSApp.activate()
+                self.panel.makeKey()
+                self.notes.focusEditor()
+                Log.write("notes", "the perch could not take the keyboard in the background, so Chirp came forward")
+            }
+        }
+    }
+
+    /// Gives the front back to the app the user was in, when a note brought Chirp forward to take the keyboard.
+    func noteGaveBackFront() {
+        guard let app = cameForward else { return }
+        cameForward = nil
+        if NSApp.isActive, !(AppDelegate.mainWindow?.isVisible ?? false) { app.activate() }
     }
 
     /// The note was closed: the keyboard goes back, and the bird says where it went.
     func noteClosed(_ saved: SavedItem?, announce: Bool) {
         giveKeyboardBack()
+        noteGaveBackFront()
         guard announce, let saved else { return }
         say("Saved to Notes", action: ("Open", { [weak self] in
             self?.app.open(saved)

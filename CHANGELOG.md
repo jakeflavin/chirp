@@ -4,6 +4,22 @@ All notable changes to Chirp. Versions follow [Semantic Versioning](https://semv
 
 ## [Unreleased]
 
+## [0.3.0]
+
+- **Notes:** New Note opens with the keyboard in the note and starts listening at once. Words appear as you pause, typing takes over, and the shortcut again or Escape saves it.
+- **Icons:** a thinner line, and clearer drawings for Meeting, Rephrase, Read aloud, Save as a Snippet, Type again and Say it as.
+- **Menu bar:** every command is in the menu bar, with File, Find and Go menus and Help › Keyboard Shortcuts.
+- Onboarding asks before it downloads the speech model.
+- Deleting a dictation or snippet asks first.
+- Say it as opens in a popover on the word.
+- Fixed: saved web pages could run their scripts when imported. They now load with scripts off and fetch nothing.
+- Fixed: the search model stayed in memory after its features were switched off.
+- Fixed: a second writing fix chosen while the first was still going in could fail or land in the wrong place.
+- Fixed: Space and the arrow keys acted on the player while you typed in a field.
+- Dictation writes "i.e." and "e.g." closed up.
+- Removed: questions about a meeting, which no screen offered.
+- Better VoiceOver labels, contrast and Reduce Motion behaviour across the app.
+
 ## [0.2.2]
 
 - The download opens in a designed window that shows where to drag Chirp.

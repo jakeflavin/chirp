@@ -22,6 +22,8 @@ struct GlassFill {
     var hover: Color { Color.primary.opacity(strong ? 0.22 : 0.08) }
     /// A chosen row, and a control's fill at rest.
     var row: Color { Color.primary.opacity(strong ? 0.14 : 0.07) }
+    /// The picked row of a list on glass (the sidebar), a step stronger than `hover` so the two never look alike.
+    var selected: Color { Color.primary.opacity(strong ? 0.3 : 0.12) }
     /// A hairline between parts of one surface.
     var line: Color { Color.primary.opacity(strong ? 0.4 : 0.12) }
     /// A track, a handle.
@@ -34,6 +36,7 @@ struct GlassFill {
     static var faint: Color { standard.faint }
     static var hover: Color { standard.hover }
     static var row: Color { standard.row }
+    static var selected: Color { standard.selected }
     static var line: Color { standard.line }
     static var track: Color { standard.track }
 }

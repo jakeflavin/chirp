@@ -1,3 +1,4 @@
+import AVFoundation
 import AppKit
 import ChirpCore
 import Observation
@@ -40,6 +41,31 @@ final class NoteController {
     @ObservationIgnored private var typed = false
     @ObservationIgnored private var dictated = false
 
+    // MARK: Listening (a new note starts listening at once)
+
+    /// The dictation a new note listens with. Set by the perch.
+    @ObservationIgnored weak var dictation: DictationController?
+    /// The editor of the note in the perch, where heard words go (never the Notes page's editor).
+    @ObservationIgnored private weak var editor: NoteTextView?
+    /// The open note is listening: what is said goes in as it is heard.
+    private(set) var listening = false
+    /// The open note has stopped listening and its last words are on their way.
+    private(set) var finishing = false
+    /// Why the open note did not start listening, in a few words for its head row; nil when it did.
+    private(set) var listenProblem: String?
+    /// Each time a note starts listening it gets a number, so words that arrive late never land in a
+    /// note opened since. `openSession` is the open note's; `lateSession` a closed one still finishing.
+    @ObservationIgnored private var sessions = 0
+    @ObservationIgnored private var openSession = 0
+    @ObservationIgnored private var lateSession = 0
+    /// The open note closes once its last words are in (Escape or the shortcut while it listened).
+    @ObservationIgnored private var closeWhenDone = false
+    /// The closed note the late words are added to, whether the late words made it, and whether its
+    /// closing is announced.
+    @ObservationIgnored private var lateItemID: Int64?
+    @ObservationIgnored private var lateMadeNote = false
+    @ObservationIgnored private var lateAnnounce = true
+
     init(library: Library) {
         self.library = library
         registerLinks()
@@ -47,16 +73,126 @@ final class NoteController {
 
     // MARK: The note in the perch
 
-    /// Opens a new, empty note in the perch. Nothing is saved until it has words.
-    func openNew() {
+    /// Opens a new, empty note in the perch, with the keyboard in it. With `listen` it starts listening
+    /// at once (when Dictate is on and the microphone is allowed): the words go in as they are heard,
+    /// and the first key typed stops listening. Nothing is saved until it has words.
+    func openNew(listen: Bool = true) {
         draft = ""
         itemID = nil
         savedAt = nil
         typed = false
         dictated = false
+        listenProblem = nil
+        closeWhenDone = false
+        // The perch's editor is made once and kept between notes (`attach`), so it is not let go here:
+        // SwiftUI does not make it again for the next note, and without it nothing could reach the note.
         isOpen = true
         Log.write("notes", "a note was opened in the perch")
         onOpen?()
+        if listen { startListening() }
+    }
+
+    /// Puts the keyboard in the open note's editor, if it is not there already.
+    func focusEditor() {
+        guard isOpen, let editor, !editor.hasKeyboard else { return }
+        editor.takeKeyboard()
+    }
+
+    /// The perch's note editor was made: heard words go here, starting at its end.
+    func attach(_ view: NoteTextView) {
+        editor = view
+        if listening || finishing { view.beginLive(at: (view.string as NSString).length) }
+    }
+
+    /// Starts the open note listening, or says plainly why it cannot. Without Dictate it is a note to type in.
+    func startListening() {
+        guard isOpen, !listening, !finishing, Features.on(.dictate), let dictation else { return }
+        sessions += 1
+        let session = sessions
+        let result = dictation.listenForNote(
+            words: { [weak self] words in self?.heard(words, session: session) },
+            done: { [weak self] in self?.listeningEnded(session: session) })
+        switch result {
+        case .started:
+            openSession = session
+            listening = true
+            editor?.beginLive(at: nil)
+            Log.write("notes", "the new note is listening")
+        case .microphoneNotAsked:
+            listenProblem = "Allow the microphone to dictate"
+            Task { [weak self] in
+                let allowed = await AVCaptureDevice.requestAccess(for: .audio)
+                guard let self, self.isOpen, self.listenProblem != nil else { return }
+                // Allowed while the note is still untouched: it starts listening, as it would have.
+                self.listenProblem = allowed ? nil : "Microphone not allowed"
+                if allowed, self.draft.isEmpty { self.startListening() }
+            }
+        case .microphoneDenied:
+            listenProblem = "Microphone not allowed"
+        case .busy, .off, .failed:
+            break
+        }
+        if result != .started { Log.write("notes", "the new note opened for typing only: \(result)") }
+    }
+
+    /// Stops listening, keeping what was heard; the last words still go in.
+    func stopListening() {
+        guard listening else { return }
+        listening = false
+        finishing = true
+        dictation?.finish()
+    }
+
+    /// A key was typed into the note in the perch. While it listens, typing takes over.
+    func typedWhileListening() {
+        guard listening else { return }
+        Log.write("notes", "typing stopped the note listening")
+        stopListening()
+    }
+
+    /// Words heard for a note, already cleaned up as Dictate cleans them. In the open note they go where
+    /// the user was talking, even if typing has begun since. A note closed before they came has them
+    /// added to its end, or, closed empty, they make a note of their own.
+    private func heard(_ words: String, session: Int) {
+        if isOpen, session == openSession {
+            if let editor, editor.window != nil {
+                editor.insertLive(words)
+            } else {
+                draft = Self.appending(words, to: draft)
+                edited(dictated: true)
+            }
+        } else if session == lateSession {
+            let old = lateItemID.flatMap { try? library.note(itemID: $0) }?.markdown ?? ""
+            guard let item = try? library.saveNote(id: lateItemID, markdown: Self.appending(words, to: old), typed: false, dictated: true) else { return }
+            if lateItemID == nil { lateMadeNote = true }
+            lateItemID = item.id
+            version += 1
+            AppDelegate.app?.libraryVersion += 1
+            Log.write("notes", "words that came after the note closed were added to it")
+        }
+    }
+
+    /// A note's dictation is over: its last words are in.
+    private func listeningEnded(session: Int) {
+        if isOpen, session == openSession {
+            listening = false
+            finishing = false
+            openSession = 0
+            editor?.endLive()
+            saveNow()
+            if closeWhenDone { close(announce: lateAnnounce) }
+        } else if session == lateSession {
+            lateSession = 0
+            // The bird said where the note went when it closed; a note made only of late words is said now.
+            if lateMadeNote, lateAnnounce, let id = lateItemID, let item = try? library.item(id) { onClose?(item, true) }
+            lateItemID = nil
+            lateMadeNote = false
+        }
+    }
+
+    /// `words` added at the end of a note, spaced as Dictate spaces them.
+    static func appending(_ words: String, to markdown: String) -> String {
+        markdown + Insertion.adapt(words, before: String(markdown.suffix(200)), after: "")
     }
 
     /// The open note changed: it is saved a moment after typing pauses.
@@ -100,12 +236,33 @@ final class NoteController {
     }
 
     /// Closes the note in the perch, saved. The bird says so, with Open, unless `announce` is false.
+    /// While it listens, listening stops first and the note closes once the last words are in. Asked
+    /// again meanwhile, it closes at once, and the last words are added to the saved note when they come.
     func close(announce: Bool = true) {
         guard isOpen else { return }
+        if listening || finishing, !closeWhenDone {
+            closeWhenDone = true
+            lateAnnounce = announce
+            if listening { stopListening() }
+            return
+        }
+        closeWhenDone = false
         // Closed straight after Return in a list: the empty point is not kept as a stray "-".
         let tidied = NoteLists.droppingEmptyLastPoint(draft)
         if tidied != draft { draft = tidied }
         let saved = saveNow()
+        if listening || finishing {
+            // Closed again before the last words came: they go to this note, saved, when they do.
+            lateSession = openSession
+            lateItemID = saved?.id
+            lateMadeNote = false
+            lateAnnounce = announce
+            if listening { stopListening() }
+        }
+        listening = false
+        finishing = false
+        openSession = 0
+        editor?.endLive()
         isOpen = false
         Log.write("notes", saved == nil ? "the note was closed empty and not kept" : "the note was closed and saved")
         onClose?(saved, announce)
@@ -239,7 +396,9 @@ final class NoteController {
     private func registerLinks() {
         guard LinkHandler.debugEnabled else { return }
         // `note?do=open|close|type&text=…|dictate&text=…|caret=N|save`: the note in the perch, as the
-        // keyboard, Escape and right ⌥ would drive it. `state` has `notes`.
+        // keyboard, Escape and right ⌥ would drive it. `open` is the New Note shortcut's own path (it
+        // starts listening); `press&text=…` sends real key presses, `stop` and `listen` stop and start
+        // listening. `state` has `notes` (with `listening`, `finishing`, `perchEditorKey`).
         LinkHandler.commands["note"] = { [weak self] q in
             guard let self else { return }
             switch q["do"] {
@@ -247,6 +406,8 @@ final class NoteController {
             case "close": self.close()
             case "type":
                 if let words = q["text"] {
+                    // Typing, as far as a listening note is concerned.
+                    self.typedWhileListening()
                     if let view = NoteTextView.focused ?? NoteEditor.Coordinator.current?.textView {
                         view.insertText(words, replacementRange: view.selectedRange())
                     } else {
@@ -257,10 +418,27 @@ final class NoteController {
             case "keys":
                 // Typed one key at a time, as the keyboard does: "\n" is Return (lists continue and end).
                 if let words = q["text"], let view = NoteTextView.focused ?? NoteEditor.Coordinator.current?.textView {
+                    self.typedWhileListening()
                     for ch in words {
                         if ch == "\n" { view.insertNewline(nil) } else { view.insertText(String(ch), replacementRange: view.selectedRange()) }
                     }
                 }
+            case "press":
+                // Real key presses into the perch's note, as the keyboard sends them: the first one stops
+                // listening, and each still goes in.
+                if let words = q["text"], let view = self.editor {
+                    for ch in words {
+                        let text = ch == "\n" ? "\r" : String(ch)
+                        guard let event = NSEvent.keyEvent(
+                            with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                            windowNumber: view.window?.windowNumber ?? 0, context: nil, characters: text,
+                            charactersIgnoringModifiers: text, isARepeat: false, keyCode: ch == "\n" ? 36 : 0)
+                        else { continue }
+                        view.keyDown(with: event)
+                    }
+                }
+            case "stop": self.stopListening()
+            case "listen": self.startListening()
             case "dictate":
                 if let words = q["text"], let view = NoteEditor.Coordinator.current?.textView { view.insertDictated(words) }
             case "caret":
@@ -295,6 +473,10 @@ final class NoteController {
             return ["open": self.isOpen, "draft": self.draft, "itemID": self.itemID ?? -1, "saved": self.savedAt != nil,
                     "editor": view?.string ?? "", "editorKey": view?.hasKeyboard ?? false, "focused": NoteTextView.focused != nil,
                     "issues": NoteEditor.Coordinator.current?.issues.count ?? 0,
+                    "count": ((try? self.library.items(kinds: [.voiceNote])) ?? []).count,
+                    "listening": self.listening, "finishing": self.finishing, "listenProblem": self.listenProblem ?? "",
+                    "perchEditor": self.editor?.string ?? "", "perchEditorKey": self.editor?.hasKeyboard ?? false,
+                    "panelKey": self.editor?.window?.isKeyWindow ?? false, "chirpActive": NSApp.isActive,
                     "clipboardText": board.string(forType: .string) ?? "", "clipboardRTF": board.data(forType: .rtf) != nil,
                     "clipboardHTML": board.data(forType: .html) != nil, "items": saved] as [String: Any]
         }

@@ -1,6 +1,8 @@
 import AppKit
 import ChirpCore
+import CoreTransferable
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The words on a list row, and how a page's items are grouped. Worked out here so every page says
 /// the same thing about the same item.
@@ -211,6 +213,9 @@ struct LibraryList: View {
     var pin: (SavedItem) -> Void = { _ in }
     var move: (SavedItem, Int64?) -> Void = { _, _ in }
     var newFolder: (SavedItem) -> Void = { _ in }
+    /// The item's header actions (Copy, Export, Read aloud, then Pin, Move to Folder… and Delete…), so a
+    /// row's right-click menu offers what its header does.
+    var header: (SavedItem) -> ItemHeaderParts = { _ in ItemHeaderParts() }
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -297,11 +302,11 @@ struct LibraryList: View {
                 // no words after its title, no line. Other rows keep room for two, so they are one height.
                 if item.kind == .voiceNote {
                     if !preview.isEmpty {
-                        Text(preview).font(.system(size: 12.5)).foregroundStyle(Color.ink.opacity(0.72))
+                        Text(preview).font(.system(size: 12.5)).foregroundStyle(Color.quiet)
                             .lineLimit(2).padding(.top, 3)
                     }
                 } else if section != .documents, item.kind != .document, item.kind != .dictation {
-                    Text(preview.isEmpty ? " " : preview).font(.system(size: 12.5)).foregroundStyle(Color.ink.opacity(0.72))
+                    Text(preview.isEmpty ? " " : preview).font(.system(size: 12.5)).foregroundStyle(Color.quiet)
                         .lineLimit(2, reservesSpace: true).padding(.top, 3)
                 }
             }
@@ -323,37 +328,90 @@ struct LibraryList: View {
             }
         }
         .padding(.horizontal, 10).padding(.vertical, 9)
-        .background(picked ? PageLayout.selected : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .modifier(RowTint(picked: picked))
         .contentShape(Rectangle())
         .onTapGesture {
             selectedID = item.id
             focused = true
         }
         .contextMenu {
-            Button(item.starred ? "Unpin" : "Pin") { pin(item) }
-            Menu("Move to Folder") {
-                ForEach(folders) { folder in
-                    Button {
-                        move(item, folder.id)
-                    } label: {
-                        if item.folderID == folder.id { Label(folder.name, image: "chirp.check") } else { Text(folder.name) }
-                    }
-                }
-                if !folders.isEmpty { Divider() }
-                Button("New Folder…") { newFolder(item) }
+            let entries = menu(for: item)
+            if !entries.isEmpty {
+                MenuEntries(items: entries)
+            } else {
+                fallbackMenu(item)
             }
-            if item.folderID != nil { Button("Remove from Folder") { move(item, nil) } }
-            Divider()
-            Button("Delete…", role: .destructive) { askDelete(item) }
         }
-        // Dragged onto a folder in the sidebar, it goes into it.
-        .draggable(LibraryDrag.text(for: item))
+        // Dragged onto a folder in the sidebar, it goes into it. Other apps get its title as text.
+        .draggable(LibraryDrag(item: item, title: LibraryRows.title(item)))
+    }
+
+    /// The row's right-click menu: the header's actions, then its "…" menu, in the header's order.
+    private func menu(for item: SavedItem) -> [HeaderMenuItem] {
+        let parts = header(item)
+        // The header's Copy says "Copied" for a moment after use; a menu entry always says what it does.
+        let actions = parts.actions.map { action -> HeaderMenuItem in
+            var entry = action.asMenuItem
+            if action.id == "copy" { entry.title = "Copy" }
+            return entry
+        }
+        var more = parts.more
+        if !actions.isEmpty, !more.isEmpty { more[0].dividerBefore = true }
+        return actions + more
+    }
+
+    /// Pin, folders and Delete…, for a list given no header actions.
+    @ViewBuilder private func fallbackMenu(_ item: SavedItem) -> some View {
+        Button(item.starred ? "Unpin" : "Pin") { pin(item) }
+        Menu("Move to Folder") {
+            ForEach(folders) { folder in
+                Button {
+                    move(item, folder.id)
+                } label: {
+                    if item.folderID == folder.id { Label(folder.name, image: "chirp.check") } else { Text(folder.name) }
+                }
+            }
+            if !folders.isEmpty { Divider() }
+            Button("New Folder…") { newFolder(item) }
+        }
+        if item.folderID != nil { Button("Remove from Folder") { move(item, nil) } }
+        Divider()
+        Button("Delete…", role: .destructive) { askDelete(item) }
     }
 }
 
-/// What a dragged Library row carries: its item's id, as text only Chirp gives a meaning to.
-enum LibraryDrag {
-    static let prefix = "chirp-item:"
-    static func text(for item: SavedItem) -> String { prefix + String(item.id ?? -1) }
-    static func id(from text: String) -> Int64? { text.hasPrefix(prefix) ? Int64(text.dropFirst(prefix.count)) : nil }
+/// A list row's tint: Ink 9% when picked, Ink 5% under the pointer, as `ItemRow` has.
+private struct RowTint: ViewModifier {
+    let picked: Bool
+    @State private var hovering = false
+
+    func body(content: Content) -> some View {
+        content
+            .background(picked ? PageLayout.selected : hovering ? PageLayout.hover : .clear,
+                        in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .onHover { hovering = $0 }
+    }
+}
+
+extension UTType {
+    /// A Library row dragged inside Chirp. Declared in Info.plist (`UTExportedTypeDeclarations`); no
+    /// other app reads it.
+    static let chirpLibraryItem = UTType(exportedAs: "com.jakeflavin.chirp.library-item")
+}
+
+/// What a dragged Library row carries: its item's id in Chirp's own type, for a folder in the sidebar,
+/// and its title as plain text for any other app it is dropped on.
+struct LibraryDrag: Codable, Sendable, Transferable {
+    let id: Int64
+    let title: String
+
+    init(item: SavedItem, title: String) {
+        self.id = item.id ?? -1
+        self.title = title
+    }
+
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .chirpLibraryItem)
+        ProxyRepresentation(exporting: \.title)
+    }
 }

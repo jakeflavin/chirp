@@ -7,7 +7,7 @@ The shared pieces live in `App/Sources/Design/`:
 
 | File | What it holds |
 |---|---|
-| `Theme.swift` | Colour tokens, type tokens, page layout, and the shared views (`Page`, `PageHeader`, `SectionHeading`, `HeadingLink`, `ItemRow`, `IconButton`, `ActButton`, `ChipLabel`, `Card`, `EmptyLine`, `SourceLine`, `ProgressBar`, `FlowLayout`, `Image.toolbarIcon`) |
+| `Theme.swift` | Colour tokens, type tokens, page layout, and the shared views (`Page`, `PageHeader`, `SectionHeading`, `HeadingLink`, `ItemRow`, `IconButton`, `ActButton`, `ChipLabel`, `Card`, `EmptyLine`, `SourceLine`, `ProgressBar`, `FlowLayout`, `Image.toolbarIcon`), and `playbackKeys` for a player's keys |
 | `Glass.swift` | Liquid Glass surfaces (`chirpGlass`, `chirpGlassCapsule`), fills on glass (`GlassFill`), shape motion (`GlassMotion`) |
 | `Bird.swift` | The bird, drawn in code, with its moods |
 | `Beta.swift` | The Beta flag, `BetaTag`, `BetaSidebarHeader` |
@@ -222,7 +222,7 @@ colour has a light and a dark value in `App/Resources/Assets.xcassets` and a nam
 | Float | `Color.float` | `Float` | `#FFFFFF` | `#272A33` | Anything over other apps: the perch's solid surface, the suggestion card. A step lighter than Card in the dark so it lifts off a dark window |
 | Ink | `Color.ink` | `Ink` | `#1F2430` | `#ECE8E1` | Words you read. Lines and tints are Ink at low strength |
 | Quiet | `Color.quiet` | `Quiet` | `#6B7080` | `#9BA0AE` | Words that support: captions, times, counts, reasons |
-| Clay (accent) | `Color.accentColor` | `AccentColor` | `#D9621F` | `#F28A45` | The system accent: switches, prominent system buttons, selection, focus rings, links |
+| Clay (accent) | `Color.accentColor` | `AccentColor` | `#D9621F` | `#F28A45` | The system accent: switches, prominent system buttons, selection, focus rings. Not link text (rule 9) |
 | Amber | `Color.amber` (`.birdBody`) | `BirdBody` | `#F6B93B` | `#F6B93B` | The bird, and what it offers or is doing: the action in use, the main action of a row, the suggested fix, counts, progress |
 | On Amber | `Color.onAmber` | `OnAmber` | `#2B2110` | `#2B2110` | Words and icons on Amber |
 | Robin | `Color.spelling` | `Spelling` | `#C23A4B` | `#F27A8A` | A mistake (spelling). Also the recording light and anything that deletes |
@@ -275,6 +275,10 @@ colour has a light and a dark value in `App/Resources/Assets.xcassets` and a nam
 8. **Colour is never the only signal.** An underline's colour has a matching dot and a sentence in its card;
    the recording light has the word "Recording" beside it; each underline kind also has its own line style
    (spelling wavy, grammar solid, style dashed, snippet cue dotted).
+9. **Links in a window are Ink, underlined.** Clay text at 13 pt is under 4.5:1 on Paper. A `HeadingLink`
+   is Quiet and turns Ink under the pointer.
+10. **Small Amber on Paper gets an edge.** A thin Amber mark on Paper (the progress bar, the "You stopped
+    here" bookmark) has a 1 pt On Amber 35% edge so its shape reads.
 
 ---
 
@@ -371,7 +375,8 @@ toolbar groups, the start bar, and a recording's bottom bar. Content stays on Pa
 | `GlassFill` | Value |
 |---|---|
 | `hover` (and a quiet chip) | `Color.primary` 8% |
-| `row` (chosen row) | `Color.primary` 7% |
+| `row` (chosen row, a control's fill at rest) | `Color.primary` 7% |
+| `selected` (picked row of a list on glass: the sidebar) | `Color.primary` 12% |
 | `line` | `Color.primary` 12% |
 | `track` | `Color.primary` 18% |
 
@@ -417,7 +422,7 @@ label and a tooltip.
 ### Style
 
 - 24 pt grid with a 2 pt margin; a 20 pt circle and square as keylines.
-- One line, 1.5 pt at 16 pt, round caps and round joins.
+- One thin line, about 1.1 pt at 16 pt (1.0 pt at the perch's 14.5 pt), round caps and round joins. A thicker line blurs at perch size.
 - Pages, cards and bubbles have rounded corners; sound and speech are circle arcs.
 - Media controls (play, pause, stop, back, forward) and set states (`pinFill`, `bookmarkFill`,
   `checkCircle`) are filled; everything else is line.
@@ -425,7 +430,7 @@ label and a tooltip.
 
 ### Adding an icon
 
-1. Draw it on the same 24 pt grid with the same 1.5 pt round line, next to two or three existing icons to
+1. Draw it on the same 24 pt grid with the same thin round line, next to two or three existing icons to
    check weight and size.
 2. Open the SF Symbols app, export any symbol's template (File › Export Template, template version 3.0),
    and put your drawing in the Regular-M, Medium-M, Semibold-M and Bold-M slots. Convert strokes to filled
@@ -434,6 +439,7 @@ label and a tooltip.
 4. Add it to `App/Resources/Assets.xcassets/Icons/` as `chirp.<name>.symbolset`, holding `chirp.<name>.svg`
    and a `Contents.json` that names it (copy an existing one).
 5. Name it by what it does, in lower camel case. Add a row to the table below.
+6. Before it ships, check that people can name it: show it unlabelled among the perch icons, at perch size, to a few people who have not seen it.
 
 ### The set
 
@@ -476,7 +482,7 @@ label and a tooltip.
 | `chirp.home` | Home |
 | `chirp.library` | Library |
 | `chirp.link` | Link |
-| `chirp.meeting` | Meeting |
+| `chirp.meeting` | Meeting (two people and a recording dot) |
 | `chirp.mic` | Microphone |
 | `chirp.more` | More (…) |
 | `chirp.note` | Note |
@@ -489,23 +495,23 @@ label and a tooltip.
 | `chirp.play` | Play (filled) |
 | `chirp.pointer` | Accessibility permission |
 | `chirp.power` | Turn off |
-| `chirp.read` | Read aloud |
+| `chirp.read` | Read aloud (a page with sound coming off it) |
 | `chirp.record` | Record |
-| `chirp.rephrase` | Rephrase |
+| `chirp.rephrase` | Rephrase (a pencil inside turning arrows) |
 | `chirp.ring` | Not yet |
-| `chirp.sayAs` | Say it as |
+| `chirp.sayAs` | Say it as (a letter between phonetic slashes) |
 | `chirp.search` | Search |
 | `chirp.settings` | Settings |
 | `chirp.share` | Share |
 | `chirp.sidebar` | Show or hide the sidebar |
-| `chirp.snippetAdd` | Save as a Snippet |
+| `chirp.snippetAdd` | Save as a Snippet (scissors and a plus) |
 | `chirp.snippets` | Snippets |
 | `chirp.stop` | Stop (filled) |
 | `chirp.style` | Writing style |
 | `chirp.summarize` | Summarize |
 | `chirp.textInPicture` | Text in a picture |
 | `chirp.trash` | Delete |
-| `chirp.typeAgain` | Type the last dictation again |
+| `chirp.typeAgain` | Type the last dictation again (a clipboard) |
 | `chirp.unpin` | Unpin |
 | `chirp.voiceNote` | Voice note |
 | `chirp.warning` | Warning |
@@ -600,6 +606,8 @@ User-facing text is plain and short.
   - Escape closes what the perch is showing, and cancels dictation.
   - Arrow keys move through the sidebar, lists and Home's rows; the menu bar popover is keyboard driven.
   - ⌘F searches the Library.
+  - A player's bar (a document, a transcript, a recording) takes Space, ← and → through `playbackKeys`,
+    never a `.keyboardShortcut` with no modifiers, so the keys stay with a text field while one is typed in.
   - Chirp's global shortcuts are right ⌥ plus a letter, hold right ⌥ to dictate, ⌥Space hands-free,
     ⌥⇥ fixes the sentence at the cursor. All can be changed in Settings › Shortcuts.
 - **Focus.** Panels over other apps never take keyboard focus unless the user is typing in them (a note),

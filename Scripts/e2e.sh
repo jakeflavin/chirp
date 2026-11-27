@@ -594,8 +594,11 @@ cmd "perch?do=more-menu"; sleep 0.5
 check "its … menu has the one-off items, then Settings" "'Type the Last Dictation Again' in d['perch']['more'] and 'Library' in d['perch']['more'] and d['perch']['more'][-1] == 'Settings…' and 'Rephrase…' not in d['perch']['more']"
 cmd "perch?do=more-button"; sleep 1
 check "a second click closes it" "not d['perch']['extended']"
+# Typing first: with Dictate off a new note does not listen, so what is typed here is all it holds.
+cmd "features?dictate=0"; sleep 1
 cmd "perch?do=note"; sleep 2
 check "Note grows the perch into a note, with the keyboard" "d['notes']['open'] and d['perch']['content'] == 'note' and d['notes']['editor'] == ''"
+check "with Dictate off it opens for typing: the keyboard is in it, and it does not listen" "d['notes']['perchEditorKey'] and not d['notes']['listening'] and d['dictation']['phase'] == 'idle'"
 cmd "note?do=type&text=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("# Kitchen shelves\nMeasure the alcove; the wall is **not square**.\n- Oak, oiled\n- Brackets `600 mm` apart"))')"
 check "typing is saved as it goes, its first line the title" "d['notes']['itemID'] >= 0 and d['notes']['items'][0]['title'] == 'Kitchen shelves' and d['notes']['items'][0]['typed']"
 check "the note keeps its Markdown, and its words without marks for search" "d['notes']['items'][0]['markdown'].startswith('# Kitchen shelves') and '**not square**' in d['notes']['items'][0]['markdown'] and 'not square' in d['notes']['items'][0]['body'] and '**' not in d['notes']['items'][0]['body']"
@@ -619,6 +622,7 @@ if grep -q 'rtf1' $TMP/note.rtf && ! grep -q '\*\*' $TMP/note.txt; then pass=$((
 check "exporting changes nothing in the note, and the list says it was exported" "d['notes']['items'][0]['exported'] and d['notes']['items'][0]['markdown'].startswith('# Ideas: Kitchen shelves')"
 
 echo "== Notes: a voice note keeps its audio and opens as an editable note"
+cmd "features?all=1"; sleep 1
 waitfor '"transcription" : "loaded' 120
 cmd "perch?do=record"; sleep 6; cmd meeting-stop; sleep 3
 for i in $(seq 1 60); do state; [ "$(value "d['meeting']['phase'] == 'idle' and len(d['notes']['items']) == 2")" = "True" ] && break; sleep 1; done
@@ -632,6 +636,7 @@ cmd open-main; cmd "section?name=home"
 check "Home says Note for a voice note, with audio kept" "any(m.startswith('Note') and 'audio kept' in m for m in d['home']['capturedMeta']) and not any('Voice note' in m for m in d['home']['capturedMeta'])"
 
 echo "== Notes: lists continue and end as in Apple Notes"
+cmd "features?dictate=0"; sleep 1
 cmd "perch?do=note"; waitval "d['notes']['open'] and d['notes']['editor'] == ''" 20
 cmd "note?do=keys&text=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("Shelves\n- oak\n"))')"
 check "Return in a point starts the next one" "d['notes']['editor'] == 'Shelves\\n- oak\\n- '"
@@ -643,6 +648,32 @@ cmd "note?do=keys&text=$(python3 -c 'import urllib.parse; print(urllib.parse.quo
 check "numbered points count on" "d['notes']['editor'].endswith('Done\\n1. cut\\n2. ')"
 cmd "note?do=close"
 check "closed straight after Return, the empty point is not saved as a stray marker" "not d['notes']['open'] and d['notes']['items'][0]['markdown'] == 'Shelves\\n- oak\\n- pine\\nDone\\n1. cut'"
+
+echo "== Notes: a new note listens at once, and typing takes over"
+cmd "features?all=1"; sleep 1
+waitfor '"transcription" : "loaded' 120
+waitval "d['perch']['notice'] == ''" 15
+COUNT=$(value "d['notes']['count']")
+# The New Note shortcut's own path. The fed recording stands in for the microphone.
+cmd "note?do=open"
+check "the shortcut opens a note with the keyboard in it, listening hands-free" "d['notes']['open'] and d['notes']['listening'] and d['dictation']['phase'] == 'recording' and d['dictation']['forNote'] and d['dictation']['handsFree'] and d['notes']['perchEditorKey']"
+waitval "d['dictation']['phase'] == 'recording' and len(d['notes']['perchEditor']) > 0" 60
+check "the words appear in the note while it is still listening" "d['dictation']['phase'] == 'recording' and len(d['notes']['perchEditor']) > 0 and d['dictation']['target'] == 'note'"
+cmd "note?do=press&text=$(python3 -c 'import urllib.parse; print(urllib.parse.quote(" Then lunch."))')"
+check "a typed key stops listening and goes into the note" "not d['notes']['listening'] and d['dictation']['phase'] != 'recording' and d['notes']['perchEditor'].endswith('Then lunch.')"
+dictation_idle 120
+check "the last words go in before what was typed, and nothing heard is lost" "'Friday' in d['notes']['perchEditor'] and d['notes']['perchEditor'].endswith('Then lunch.') and not d['notes']['finishing']"
+check "it is saved as typed and dictated, and the dictation is kept in the history" "d['notes']['items'][0]['dictated'] and d['notes']['items'][0]['typed'] and 'Friday' in d['notes']['items'][0]['markdown'] and any('Friday' in t for t in d['dictation']['dictations'])"
+cmd "note?do=close"
+waitval "not d['notes']['open'] and d['perch']['notice'] == ''" 20
+cmd "note?do=open"; waitval "d['notes']['listening']" 20
+cmd "note?do=open"
+check "the shortcut again stops listening, waits for the last words, then saves and closes" "not d['notes']['open'] and d['dictation']['phase'] == 'idle' and d['notes']['count'] == $COUNT + 2 and 'Friday' in d['notes']['items'][0]['markdown']"
+waitval "d['perch']['notice'] == ''" 15
+cmd "perch?do=note"; waitval "d['notes']['listening']" 20
+check "a click on Note opens it the same way, listening" "d['notes']['open'] and d['notes']['listening'] and d['notes']['perchEditorKey']"
+cmd "perch?do=escape"
+check "Escape does the same: the last words go in, then it is saved and closed" "not d['notes']['open'] and d['dictation']['phase'] == 'idle' and d['notes']['count'] == $COUNT + 3 and 'Friday' in d['notes']['items'][0]['markdown']"
 
 echo "== Notes and Meetings are separate switches"
 cmd "features?notes=0"; sleep 1

@@ -44,11 +44,11 @@ enum PerchPosition: String, CaseIterable, Identifiable {
 extension KeyboardShortcuts.Name {
     /// Brings the Library window forward from any app.
     // These four are right Option and a letter (see `ShortcutLayout`).
-    static let openLibrary = Self("openLibrary", default: .init(.o, modifiers: [.option]))
+    static let openLibrary = Self("openLibrary", initial: .init(.o, modifiers: [.option]))
     /// Starts a meeting ("Record a Meeting"), or stops the recording under way.
-    static let recordMeeting = Self("recordMeeting", default: .init(.m, modifiers: [.option]))
+    static let recordMeeting = Self("recordMeeting", initial: .init(.m, modifiers: [.option]))
     /// Summarizes the selection, the text the cursor is in, or the page in front.
-    static let summarize = Self("summarize", default: .init(.u, modifiers: [.option]))
+    static let summarize = Self("summarize", initial: .init(.u, modifiers: [.option]))
 }
 
 /// Light, dark, or whatever macOS is set to.
@@ -275,6 +275,8 @@ final class PerchController {
     private var notesToShow: Int64?
     /// The recording whose finished notes are shown in a card above the perch; nil when no such card is open.
     var finished: SavedItem?
+    /// The app that was in front when a note brought Chirp forward to take the keyboard; it comes back when the note closes.
+    var cameForward: NSRunningApplication?
 
     /// Opens the recording from the card in the Library.
     func openFinished() {
@@ -354,6 +356,7 @@ final class PerchController {
             })
         }
         PerchStyle.actionCount = arrangement.shown(Features.shared.set).bar.count
+        notes.dictation = dictation
         notes.onOpen = { [weak self] in self?.noteOpened() }
         notes.onClose = { [weak self] saved, announce in self?.noteClosed(saved, announce: announce) }
         Features.shared.whenChanged { [weak self] old, new in
@@ -705,7 +708,7 @@ final class PerchController {
     }
 
     /// How long a line stays on the bar by itself. It also goes on a click, on Escape and with its ×.
-    static let noticeSeconds = 3.0
+    nonisolated static let noticeSeconds = 3.0
 
     /// Shows one line on the bar, with an optional button. It never holds the bar: it goes after three
     /// seconds at most, or sooner on a click, Escape or its ×. Something that went wrong (`error`) stays
@@ -777,11 +780,13 @@ final class PerchController {
         }
     }
 
-    /// Note on the perch, and right ⌥ N: the perch grows into a note to type or dictate into. Pressed
-    /// with a note open, it closes it, saved.
+    /// Note on the perch, in the menu bar and on Home, and right ⌥ N: the perch grows into a note with
+    /// the keyboard in it, listening (Dictate on): what is said goes in as it is heard, and typing takes
+    /// over. Pressed with a note open, it stops listening, waits for the last words, and closes it, saved.
     func note() {
         guard Features.on(.notes) else { return }
-        if notes.isOpen { notes.close() } else { notes.openNew() }
+        // A recording has the microphone: the note is for typing then.
+        if notes.isOpen { notes.close() } else { notes.openNew(listen: recorder.phase != .recording) }
     }
 
     /// "Record a Meeting" in More and the menu bar, and its shortcut: for a meeting in the room, or one
@@ -1321,7 +1326,7 @@ final class PerchController {
 
 /// A clear, borderless panel that floats over other apps and never makes Chirp the active app.
 /// It takes the keyboard only when a text field in it is clicked (the meeting notes), or when the perch
-/// asks for it (the rephrase panel, a keyboard review).
+/// asks for it (a new note, the rephrase panel, a keyboard review).
 final class PerchPanel: NSPanel {
     init() {
         super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)

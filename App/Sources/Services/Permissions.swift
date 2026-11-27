@@ -2,6 +2,7 @@ import AVFoundation
 import AppKit
 import ApplicationServices
 import Observation
+import Combine
 import SwiftUI
 
 /// The macOS permissions Chirp uses, and whether each is granted.
@@ -200,11 +201,11 @@ struct PermissionRows: View {
                     .font(.title3)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title).font(.body.weight(.medium))
-                    Text(why).font(.caption).foregroundStyle(Color.quiet).fixedSize(horizontal: false, vertical: true)
+                    Text(why).font(.rowMeta).foregroundStyle(Color.quiet).fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 if granted {
-                    Text("Allowed").font(.caption).foregroundStyle(Color.quiet)
+                    Text("Allowed").font(.rowMeta).foregroundStyle(Color.quiet)
                 } else {
                     if let extra { Button(extra.0, action: extra.1).buttonStyle(.borderless) }
                     Button(label, action: action)

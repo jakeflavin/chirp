@@ -98,7 +98,7 @@ struct SearchView: View {
         if search.indexing {
             HStack(spacing: 6) {
                 ProgressView().controlSize(.small)
-                Text(search.pendingIndex > 0 ? "Reading \(search.pendingIndex) items" : "Getting ready").font(.caption).foregroundStyle(Color.quiet)
+                Text(search.pendingIndex > 0 ? "Reading \(search.pendingIndex) items" : "Getting ready").font(.rowMeta).foregroundStyle(Color.quiet)
             }
         } else if !search.meaningAvailable {
             Button("Turn on search by meaning") { search.buildIndex() }
@@ -109,7 +109,7 @@ struct SearchView: View {
                 .controlSize(.small)
                 .help("New items are found by their words. This reads them so they are found by meaning too.")
         } else {
-            Text("Searching by words and meaning").font(.caption).foregroundStyle(Color.quiet)
+            Text("Searching by words and meaning").font(.rowMeta).foregroundStyle(Color.quiet)
         }
     }
 

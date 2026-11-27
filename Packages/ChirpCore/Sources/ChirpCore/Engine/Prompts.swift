@@ -320,19 +320,6 @@ public struct Prompts: Sendable {
 
     /// Whether a notes section holds decisions, which a long recording works out part by part.
     public static func isDecisionSection(_ section: String) -> Bool { section.lowercased().contains("decision") }
-
-    /// Instructions for answering a question from the user's own saved notes.
-    public func askInstructions() -> String {
-        """
-        You answer a question using only the numbered passages from the person's own notes, given below the question.
-        Reply with one or two full sentences that answer the question in the words of the passages, \
-        then the number of the passage you used in square brackets, like: The report is due on Friday. [2]
-        In meeting transcripts each line starts with who is speaking. If a speaker says a named person will do \
-        something ("Priya will fix it"), that named person does it, not the speaker.
-        If the passages do not contain the answer, reply exactly: I couldn't find that in your notes.
-        Never answer from general knowledge. Use \(profile.spelling == .british ? "British" : "American") English spelling.
-        """
-    }
 }
 
 /// Cuts long text into pieces small enough for a model or an embedding.

@@ -121,6 +121,7 @@ struct LibraryWindow: View {
     @Environment(ReadController.self) private var reader
     @Environment(SearchController.self) private var search
     @Environment(PerchController.self) private var perch
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The saved items in the section being shown, newest first.
     @State private var items: [SavedItem] = []
@@ -205,7 +206,8 @@ struct LibraryWindow: View {
                     .overlay(alignment: .topTrailing) { sidebarButton.padding(.top, 7).padding(.trailing, 8) }
                     .padding(.leading, 8).padding(.vertical, 8)
                     .ignoresSafeArea(.container, edges: .top)
-                    .transition(.move(edge: .leading).combined(with: .opacity))
+                    // With Reduce Motion it fades in and out instead of sliding.
+                    .transition(reduceMotion ? .opacity : .move(edge: .leading).combined(with: .opacity))
             }
             VStack(spacing: 0) {
                 if let banner = app.banner {
@@ -222,6 +224,10 @@ struct LibraryWindow: View {
                 content
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // An error shown in the banner is spoken too, since VoiceOver would not otherwise notice it appear.
+            .onChange(of: app.banner) { _, banner in
+                if let banner { AccessibilityNotification.Announcement(banner).post() }
+            }
         }
         .background(Color.paper.ignoresSafeArea())
         // How wide the window is decides the sidebar below 900, the list's width and the search field.
@@ -323,16 +329,17 @@ struct LibraryWindow: View {
 
     var body: some View {
         observed
-        .background {
-            // Command-F puts the cursor in the search field.
-            Button("Search") {
+        // The menu bar's File and Edit commands (their keys live there, so every command can be found).
+        .onChange(of: app.menuCommand?.number) {
+            switch app.menuCommand?.command {
+            case .newNote: newNote()
+            case .addFile: pickFile()
+            case .addLink: askingAddress = true
+            case .find:
                 searchExpanded = true
                 searchFocused = true
+            case nil: break
             }
-            .keyboardShortcut("f", modifiers: .command).hidden()
-            // ⌃⌘S shows or hides the sidebar, as in Finder, Mail and Notes.
-            Button("Sidebar") { withAnimation(.easeInOut(duration: 0.2)) { app.toggleSidebar() } }
-                .keyboardShortcut("s", modifiers: [.command, .control]).hidden()
         }
         .onFileDrop(isTargeted: $dropTargeted) { url in add(url) }
         // Edit › Paste on the Documents page keeps the clipboard's text as a document.
@@ -410,7 +417,7 @@ struct LibraryWindow: View {
         case (true, true): "Drop a document to read, or audio to transcribe"
         case (true, false): "Drop a document"
         case (false, true): "Drop audio to transcribe"
-        case (false, false): "Nothing that is switched on can take a file"
+        case (false, false): "Turn on Read aloud or Meetings in Settings to add files"
         }
     }
 
@@ -615,7 +622,6 @@ struct LibraryWindow: View {
                         } label: {
                             Label("New Note", image: "chirp.note")
                         }
-                        .keyboardShortcut("n", modifiers: .command)
                         Button {
                             perch.record()
                         } label: {
@@ -779,7 +785,7 @@ struct LibraryWindow: View {
                 HStack(spacing: 0) {
                     LibraryList(
                         section: app.section, items: items, folders: folders, selectedID: $selectedID, askDelete: { deleting = $0 },
-                        pin: pin, move: move, newFolder: { folderFor = $0; namingFolder = true }
+                        pin: pin, move: move, newFolder: { folderFor = $0; namingFolder = true }, header: headerParts(for:)
                     )
                         .frame(width: listWidth)
                     Rectangle().fill(PageLayout.line).frame(width: 1)
@@ -913,7 +919,7 @@ struct LibraryWindow: View {
         let recording = item.kind == .meeting || item.kind == .voiceNote
         var export: [HeaderMenuItem] = [
             HeaderMenuItem(id: "markdown", title: "Markdown…") { export(item, markdown: true) },
-            HeaderMenuItem(id: "plain", title: "Plain text…") { export(item, markdown: false) },
+            HeaderMenuItem(id: "plain", title: "Plain Text…") { export(item, markdown: false) },
         ]
         if item.kind != .document, item.audioFile != nil {
             export.append(HeaderMenuItem(id: "audio", title: "Audio…") { exportAudio(item) })
@@ -1195,7 +1201,7 @@ struct ItemDetail: View {
             })
         }
         if item.rawText != item.body, !item.rawText.isEmpty {
-            extra.append(HeaderMenuItem(id: "raw", title: "Copy the Original Words") { TextInserter.copy(item.rawText) })
+            extra.append(HeaderMenuItem(id: "raw", title: "Copy Original Words") { TextInserter.copy(item.rawText) })
         }
         var out = header.adding(first: [HeaderAction(id: "edit", title: "Edit", symbol: "chirp.edit", help: "Fix the words") { editing = true }])
         // Its own entries after Pin and Move to Folder, before Delete.
@@ -1285,7 +1291,8 @@ private struct SidebarRow: View {
                 }
             }
             .padding(.horizontal, 8).frame(height: 30)
-            .background(selected ? Color.ink.opacity(0.09) : hovering ? Color.ink.opacity(0.045) : .clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            // The sidebar is glass, so its rows use glass fills.
+            .background(selected ? GlassFill.selected : hovering ? GlassFill.hover : .clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -1324,7 +1331,8 @@ private struct FolderRow: View {
                 if count > 0, !hovering { Text("\(count)").font(.system(size: 12)).monospacedDigit().foregroundStyle(Color.quiet) }
             }
             .padding(.horizontal, 8).frame(height: 30)
-            .background(targeted ? Color.amber.opacity(0.3) : selected ? Color.ink.opacity(0.09) : hovering ? Color.ink.opacity(0.045) : .clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(targeted ? Color.amber.opacity(0.3) : selected ? GlassFill.selected : hovering ? GlassFill.hover : .clear,
+                        in: RoundedRectangle(cornerRadius: 9, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -1347,8 +1355,8 @@ private struct FolderRow: View {
             }
         }
         .onHover { hovering = $0 }
-        .dropDestination(for: String.self) { texts, _ in
-            let ids = texts.compactMap(LibraryDrag.id(from:))
+        .dropDestination(for: LibraryDrag.self) { dragged, _ in
+            let ids = dragged.map(\.id).filter { $0 >= 0 }
             ids.forEach(drop)
             return !ids.isEmpty
         } isTargeted: { targeted = $0 }
@@ -1381,9 +1389,10 @@ private struct FolderField: View {
                 .accessibilityIdentifier("sidebar.folderField")
         }
         .padding(.horizontal, 8).frame(height: 30)
-        .background(Color.card.opacity(0.9), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.ink.opacity(0.16)))
-        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).inset(by: -2).strokeBorder(Color.amber.opacity(0.4), lineWidth: 3))
+        .background(Color.card.opacity(0.9), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(Color.ink.opacity(0.16)))
+        // A focus ring is the system accent (Clay), as on every other field.
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).inset(by: -2).strokeBorder(Color.accentColor.opacity(0.5), lineWidth: 3))
         .onAppear { focused = true }
         .onChange(of: focused) { _, has in if !has { done(name) } }
     }

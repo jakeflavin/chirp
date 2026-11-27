@@ -1,3 +1,4 @@
+import Testing
 import XCTest
 
 @testable import ChirpCore
@@ -119,5 +120,21 @@ final class FeaturesTests: XCTestCase {
         XCTAssertFalse(FeatureSet(on: [.read, .write, .summarize, .dictate]).takesDrop(audio: true))
         XCTAssertTrue(FeatureSet(on: [.notes]).takesDrop(audio: false))
         XCTAssertFalse(FeatureSet(on: [.dictate]).takesDrop(audio: false))
+    }
+}
+
+@Suite struct SearchModelFeatureTests {
+    @Test func searchStaysWhileAnySavedItemsAreListed() {
+        for feature in [Feature.dictate, .meetings, .notes, .read, .summarize] {
+            #expect(FeatureSet(on: [feature]).needs(.search), "\(feature)")
+        }
+        // Writing checks alone saves nothing to search.
+        #expect(!FeatureSet(on: [.write]).needs(.search))
+        #expect(!FeatureSet.none.needs(.search))
+    }
+
+    @Test func searchIsUnloadedWhenTheLastFeatureThatSavesItemsGoesOff() {
+        #expect(FeatureSet(on: [.write]).modelsToUnload(after: FeatureSet(on: [.write, .notes])) == [.speech, .search])
+        #expect(FeatureSet(on: [.write, .read]).modelsToUnload(after: FeatureSet(on: [.write, .read, .notes])) == [.speech])
     }
 }

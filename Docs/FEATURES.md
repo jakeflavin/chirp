@@ -9,7 +9,7 @@ The six switchable features (Settings › General › Features) are Dictate, Mee
 Writing checks and Summarize. In this file "Record" covers Meetings and Notes. Debug hooks are
 `chirp://debug/<name>` links that work only when Chirp is launched with `--debug-hooks`.
 
-Default shortcuts: hold right Option alone to dictate; with right Option held, N voice note, M meeting,
+Default shortcuts: hold right Option alone to dictate; with right Option held, N new note, M meeting,
 L read aloud, U summarize, I rewrite panel, K rephrase, O open the Library, P paste last dictation.
 ⌥Space is hands-free dictation. ⌥Tab fixes the sentence the cursor is in when a fix is on offer. All
 can be changed in Settings › Shortcuts.
@@ -88,7 +88,7 @@ meetings and offer to record; Screen Recording only when the camera button is us
 language model (meeting notes only; voice notes use no language model).
 
 **Debug hooks.** `meeting-start`, `meeting-stop`, `meeting-note`, `meeting-capture`, `meeting-notes-stop`,
-`meeting-redo`, `meeting-offer`, `meeting-offer-accept`, `meeting-ask`, `meeting-attach`,
+`meeting-redo`, `meeting-offer`, `meeting-offer-accept`, `meeting-attach`,
 `meeting-detach`, `meeting-import`, `calendar-fake`, `call-name`, `transcribe-link`, `link-ask`,
 `link-kind`, `link-choose`, `link-cancel`, `link-tool`, `job-hold`, `job-cancel`, `retranscribe-kept`,
 `drop`, `drop-do`, `file-drag`. Environment: `CHIRP_RECORD_TEST`, `CHIRP_LINKTOOL_BASE`,
@@ -200,23 +200,47 @@ ready, with a progress line for long documents.
 
 ## Notes and search
 
-**Notes.** A typed note opens in the perch (`Notes/PerchNote.swift`) and full size on Library › Notes
+**Notes.** A note opens in the perch (`Notes/PerchNote.swift`) and full size on Library › Notes
 (`Notes/NoteDetail.swift`), with the same Markdown editor (`Notes/NoteEditor.swift`): marks are hidden
 except in the paragraph being edited, and writing checks run in it. Holding right Option dictates at
 the cursor. `NoteController` (`Notes/NoteController.swift`) saves as the user types and handles Copy,
 Export and Share. Typed notes and voice notes are both stored as `voiceNote` items, the typed text in
 the `itemNote` table. The Notes switch covers both. No language model is used.
 
+**A new note in the perch.** New Note (right ⌥ N), and Note on the perch, in the menu bar and on Home,
+open the same way:
+
+1. The perch grows into the note with the keyboard in it. The perch panel becomes the key window
+   without making Chirp the active app (`PerchController.noteOpened`, `NoteTextView.takeKeyboard`),
+   so the user types straight away, with no click.
+2. With Dictate on, it starts listening hands-free (`NoteController.startListening` →
+   `DictationController.listenForNote`, target `.note`). The words never go to the app in front. While
+   it listens, each phrase is transcribed as soon as the user pauses (`ChirpCore/Text/LiveCut.swift`,
+   `transcribeLivePiece`), cleaned up by `DictationPipeline` as Dictate cleans it, and put in at the
+   place the user was talking (`NoteTextView.insertLive`).
+3. The first key that types (a letter, Space, Return, Delete; not arrows or ⌘ shortcuts) stops
+   listening and goes into the note. Words heard before it still go in, before what was typed.
+4. New Note again, Escape, or × stops listening, waits for the last words, then saves and closes.
+   Asked a second time while waiting, it closes at once and the last words are added to the saved
+   note when they come. The whole dictation is also kept in Library › Dictations, as every dictation is.
+5. Without Dictate, or during a recording (which has the microphone), the note opens for typing only.
+   Without the microphone it opens for typing and its head row says "Microphone not allowed", with
+   Allow Microphone; if macOS has not asked yet, it asks and starts listening once allowed.
+
 **Search.** The search field in the Library toolbar searches everything saved. `SearchController`
 (`Remember/SearchController.swift`) shows exact-word matches at once (SQLite FTS5 through `Library.search`)
 and adds matches by meaning when the search model is ready (`SemanticSearch` in
 `Packages/ChirpCore/.../Store/SemanticSearch.swift`). Search by meaning is off until the user presses
 "Turn on search by meaning"; that downloads the search model and embeds every item's passages into the
-`chunk` table. New items are embedded only when the user presses "Search N new items by meaning".
+`chunk` table. New items are embedded only when the user presses "Search N new items by meaning". With
+every feature that saves items switched off (Writing checks alone), search by meaning does not run and
+the search model is unloaded (`FeatureModel.search`).
 
 **Models.** bge-small in the language helper (search only).
 
-**Debug hooks.** `note`, `note-accept`, `note-copy`, `note-export`, `note-rewrite`, `search`,
+**Debug hooks.** `note` (`do=open` is New Note's own path; `press`, `stop`, `listen` for a listening
+note; `state` has `notes.listening`, `notes.finishing`, `notes.perchEditorKey`), `note-accept`,
+`note-copy`, `note-export`, `note-rewrite`, `search`,
 `search-index`, `item`, `folder`. Environment: `CHIRP_EMBED_IDLE`.
 
 ## Home
@@ -250,8 +274,9 @@ Debug hooks: `settings`, `settings-tab`, `features`, `language-size`, `danger`, 
 `Onboarding/OnboardingView.swift`, `Onboarding/OnboardingSteps.swift`, shown by `FirstRunWindow` in its
 own small window on first run. Steps: Features, Dictation (try it), Shortcuts, Permissions, Models,
 Language model, Writing, Notes, Recording, Reading; steps for switched-off features are left out. Each
-step holds the real control, so what is set there is set for good. Opening it starts the speech model
-download. Leaving it adds one short sample document to Home and opens the Library. Reopened from
+step holds the real control, so what is set there is set for good. Nothing downloads until the user
+starts it: the Dictation step shows the speech model's size with a button to download it, and the Models
+step has a Download button per model and "Download all". Leaving it adds one short sample document to Home and opens the Library. Reopened from
 Settings › General, it shows current values and resets nothing. Debug hooks: `onboarding`,
 `onboarding-step`, `onboarding-do`; launch flag `--skip-onboarding`.
 
@@ -265,7 +290,8 @@ three items, quick settings, then Library, Settings and Quit. Debug hooks: `menu
 
 **Perch** (`Perch/`). A small glass bar at the bottom of the screen, over other apps, that never takes
 focus unless a field in it is clicked. At rest it shows the bird and up to five actions (arranged in
-Settings › Perch › Customize Perch, `ChirpCore/Engine/PerchArrangement.swift`). It grows to show live
+Settings › Perch › Customize Perch, `ChirpCore/Engine/PerchArrangement.swift`). A new note is the one
+thing that takes the keyboard when it opens, so the user can type at once. It grows to show live
 state and results: dictation, a recording and its panel, reading, a summary, suggestions, the rewrite
 panel, a note, a dropped file. It can sit in five places, stand at a side edge, hide in full screen,
 and accepts dropped files (`Perch/PerchDrop.swift`). Debug hooks: `perch`, `perch-arrange`,

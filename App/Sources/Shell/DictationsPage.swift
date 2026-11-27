@@ -158,7 +158,7 @@ struct SnippetSuggestion: View {
     var body: some View {
         HStack(spacing: 10) {
             Bird(mood: .idle, size: 22).accessibilityHidden(true)
-            (Text("You have said ") + Text("“\(said.text)”").fontWeight(.semibold) + Text(" \(Self.times(said.count)) this week."))
+            Text("You have said \(Text("“\(said.text)”").fontWeight(.semibold)) \(Self.times(said.count)) this week.")
                 .font(.system(size: 13)).foregroundStyle(Color.ink).lineLimit(2)
             Spacer(minLength: 8)
             ActButton(title: "Save as a snippet", primary: true, action: save).accessibilityIdentifier("suggestion.save")

@@ -177,9 +177,11 @@ private struct RecordingTimeline: View {
     private func said(_ line: TranscriptSegment, newest: Bool) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(line.start.clock).font(.system(size: 11)).monospacedDigit().foregroundStyle(GlassFill.quiet).frame(width: 32, alignment: .leading)
-            (Text(meeting ? (line.speaker == "Me" ? "You " : "\(line.speaker) ") : "").fontWeight(.semibold)
-                .foregroundStyle(line.speaker == "Me" ? Color.accentColor : Color.grammar)
-                + Text(line.text).foregroundStyle(newest ? GlassFill.ink : GlassFill.quiet))
+            Text("""
+                \(Text(meeting ? (line.speaker == "Me" ? "You " : "\(line.speaker) ") : "").fontWeight(.semibold)
+                .foregroundStyle(line.speaker == "Me" ? Color.accentColor : Color.grammar))\
+                \(Text(line.text).foregroundStyle(newest ? GlassFill.ink : GlassFill.quiet))
+                """)
                 .font(.system(size: 13)).lineLimit(4).frame(maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityElement(children: .combine)

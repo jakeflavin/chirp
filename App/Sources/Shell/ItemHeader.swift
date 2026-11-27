@@ -304,7 +304,7 @@ struct HeaderOffer: View {
     }
 
     private var words: some View {
-        (Text(lead).fontWeight(.semibold).foregroundStyle(Color.ink) + Text(rest).foregroundStyle(Color.quiet))
+        Text("\(Text(lead).fontWeight(.semibold).foregroundStyle(Color.ink))\(Text(rest).foregroundStyle(Color.quiet))")
             .font(.system(size: 12.5))
     }
 

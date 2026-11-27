@@ -393,6 +393,8 @@ private struct FixRow: View {
             .buttonStyle(PerchPress())
             .disabled(issue.suggestions.isEmpty)
             .help(Proofreading.plain(issue.message))
+            // The dot's colour says the kind on screen; VoiceOver hears it in words.
+            .accessibilityLabel(spoken(checks))
             .accessibilityHint(Proofreading.plain(issue.message))
             Button {
                 checks.dismiss(issue)
@@ -402,10 +404,17 @@ private struct FixRow: View {
             }
             .buttonStyle(PerchPress())
             .help("Dismiss")
-            .accessibilityLabel("Dismiss")
+            .accessibilityLabel("Dismiss suggestion for \(flagged)")
         }
         .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(GlassFill.row).opacity(chosen ? 1 : 0))
         // The whole row lights up, the dismiss button with it.
         .lit(by: perch)
+    }
+
+    /// "Spelling: teh becomes the", or the kind, the words and what is wrong when there is no fix.
+    private func spoken(_ checks: UnderlineController) -> String {
+        let kind = issue.category.title
+        guard let fix = issue.suggestions.first else { return "\(kind): \(flagged), \(Proofreading.plain(issue.message))" }
+        return "\(kind): \(flagged) becomes \(issue.label(for: fix, in: checks.text))"
     }
 }

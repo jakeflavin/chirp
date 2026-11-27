@@ -2,6 +2,7 @@ import AppKit
 import ChirpCore
 import ChirpML
 import KeyboardShortcuts
+import Combine
 import SwiftUI
 
 /// Onboarding: a tour and the setup in one. Each step explains
@@ -52,9 +53,9 @@ struct OnboardingView: View {
         .frame(width: Self.size.width, height: Self.size.height)
         .background(Color.paper)
         .task {
-            // Fetch the speech model without asking: dictation is the first thing the user will try.
-            guard Features.shared.set.needs(.speech) else { return }
-            _ = try? await models.ensure(.transcription)
+            // The speech model downloads only when the user starts it (on the dictation or the models step).
+            // One already on this Mac is made ready now, so the first dictation here is quick.
+            guard Features.shared.set.needs(.speech), Transcriber.isDownloaded else { return }
             await models.prepareSpeech()
         }
         .onChange(of: step, initial: true) { _, now in
@@ -397,7 +398,14 @@ private struct DictationStep: View {
                 }
             }
             .padding(.top, 16)
-            if !Permissions.shared.microphoneGranted {
+            if models.state(.transcription) == .notDownloaded {
+                // Nothing is downloaded until the user says so.
+                VStack(spacing: 10) {
+                    StepNote(text: "Dictation needs the speech model, about \(ModelKind.speechMegabytes) MB. It downloads once, then works offline.")
+                    OnbButton(title: "Download the speech model") { models.startSpeechDownload() }
+                        .accessibilityIdentifier("onboarding.speechDownload")
+                }
+            } else if !Permissions.shared.microphoneGranted {
                 Text("Chirp cannot hear you yet. Allow the microphone two steps on.").font(.system(size: 12)).foregroundStyle(Color.caution).padding(.top, 12)
             } else if !modelNote.isEmpty {
                 StepNote(text: modelNote)
@@ -417,7 +425,7 @@ private struct DictationStep: View {
     /// How the speech model is coming along, so a slow first dictation is explained. Empty once it is ready.
     private var modelNote: String {
         switch models.state(.transcription) {
-        case .notDownloaded: "Getting the speech model ready."
+        case .notDownloaded: ""
         case .downloading(let fraction): "Downloading the speech model once: \(Int(fraction * 100))%. After that, dictation works offline."
         case .failed: "The speech model did not download. Check the connection; Chirp tries again when you dictate."
         default: models.speechPrepared ? "" : "The first minute on a new Mac is slower while the speech model settles in."
@@ -623,9 +631,10 @@ private struct PermissionsStep: View {
 
 private struct ModelsStep: View {
     @Environment(ModelCenter.self) private var models
-    @Environment(AppModel.self) private var app
     /// The model being fetched from this step, one at a time.
     @State private var fetching: ModelKind?
+    /// True once "Download all" was pressed: the missing models are then fetched one after another.
+    @State private var downloadingAll = false
 
     /// The models the features that are on need, in the order they are fetched.
     private var kinds: [ModelKind] {
@@ -635,7 +644,7 @@ private struct ModelsStep: View {
         if on.needs(.language) { out.append(.language) }
         if on.needs(.voice) { out.append(.voice) }
         if on.needs(.speakers) { out.append(.speakers) }
-        out.append(.search)
+        if on.needs(.search) { out.append(.search) }
         return out
     }
 
@@ -661,7 +670,7 @@ private struct ModelsStep: View {
 
     private func megabytes(_ kind: ModelKind) -> Double {
         switch kind {
-        case .transcription: 730
+        case .transcription: Double(ModelKind.speechMegabytes)
         case .language: ModelCenter.languageSize.downloadGB * 1000
         case .voice: 95
         case .speakers: 100
@@ -692,15 +701,21 @@ private struct ModelsStep: View {
                 }
             }
             .padding(.top, 16)
+            if !missing.isEmpty, !downloadingAll {
+                OnbButton(title: "Download all") { downloadingAll = true }
+                    .disabled(fetching != nil)
+                    .padding(.top, 14)
+                    .accessibilityIdentifier("onboarding.downloadAll")
+            }
             StepNote(text: missing.isEmpty ? "Everything is on this Mac. Chirp works offline from here."
-                : "What is ready works now. The rest are ready when their download finishes; you can carry on.")
+                : downloadingAll ? "What is ready works now. The rest are ready when their download finishes; you can carry on."
+                : "Nothing downloads until you start it. A model you skip downloads the first time its feature needs it.")
         }
         .onAppear { models.refresh() }
-        // One download at a time, in order; each is put away again once it is on this Mac, so nothing
-        // large stays in memory because of this step.
-        .task(id: missing.first) {
-            // Opened again from Settings it only shows: a missing model is fetched when its button is pressed.
-            guard !app.onboardingAgain, let next = missing.first else { return }
+        // After "Download all", one download at a time, in order; each is put away again once it is on this
+        // Mac, so nothing large stays in memory because of this step.
+        .task(id: downloadingAll ? missing.first : nil) {
+            guard downloadingAll, let next = missing.first else { return }
             if case .failed = models.state(next) { return }
             await fetch(next)
         }
@@ -714,6 +729,8 @@ private struct ModelsStep: View {
         do {
             try await models.ensure(kind)
             if kind != .transcription { await models.unload(kind) }
+            // The speech model stays for the dictation step, and settles in meanwhile.
+            if kind == .transcription { Task { await models.prepareSpeech() } }
         } catch {
             Log.write("models", "onboarding: \(kind.name) did not download: \(error.localizedDescription)")
         }
@@ -735,10 +752,10 @@ private struct ModelsStep: View {
         case .failed(let why):
             OnbButton(title: "Try again", small: true) { Task { await fetch(kind) } }.help(why)
         case .notDownloaded:
-            if app.onboardingAgain {
-                OnbButton(title: "Download", small: true) { Task { await fetch(kind) } }.disabled(fetching != nil)
-            } else {
+            if downloadingAll {
                 Text("Waiting").foregroundStyle(Color.quiet)
+            } else {
+                OnbButton(title: "Download", small: true) { Task { await fetch(kind) } }.disabled(fetching != nil)
             }
         }
     }

@@ -181,16 +181,16 @@ struct WritePage: View {
                 let count = model.issues.filter { $0.category == category }.count
                 HStack(spacing: 4) {
                     Circle().fill(Color(nsColor: category.color)).frame(width: 7, height: 7)
-                    Text("\(count) \(category.title.lowercased())").font(.caption).fixedSize().foregroundStyle(count == 0 ? Color.quiet : Color.ink)
+                    Text("\(count) \(category.title.lowercased())").font(.rowMeta).fixedSize().foregroundStyle(count == 0 ? Color.quiet : Color.ink)
                 }
                 .accessibilityElement(children: .combine)
             }
             if model.deepening {
                 ProgressView().controlSize(.small)
-                Text("Checking grammar").font(.caption).foregroundStyle(Color.quiet).fixedSize()
+                Text("Checking grammar").font(.rowMeta).foregroundStyle(Color.quiet).fixedSize()
             }
             if !model.assistant.tone.isEmpty, model.assistant.toneFor == model.text {
-                Text("Sounds \(model.assistant.tone)").font(.caption).foregroundStyle(Color.quiet).fixedSize()
+                Text("Sounds \(model.assistant.tone)").font(.rowMeta).foregroundStyle(Color.quiet).fixedSize()
                     .help("How this reads to someone else, judged on this Mac by the language model.")
                     .accessibilityIdentifier("write.tone")
             }
@@ -203,12 +203,12 @@ struct WritePage: View {
             Button("Proofread") { run(.fix) }.disabled(empty)
                 .help("A slower, deeper check with the language model. Shows every change before you accept it.")
             Menu("Rewrite") {
-                Button("Rephrase, same tone") { run(.rephrase(.neutral)) }
-                Button("More casual") { run(.rephrase(.casual)) }
-                Button("More formal") { run(.rephrase(.formal)) }
+                Button("Rephrase, Same Tone") { run(.rephrase(.neutral)) }
+                Button("More Casual") { run(.rephrase(.casual)) }
+                Button("More Formal") { run(.rephrase(.formal)) }
                 Divider()
                 Button("Shorten") { run(.shorten) }
-                Button("Write out my notes") { run(.writeOut) }
+                Button("Write Out My Notes") { run(.writeOut) }
             }
             .fixedSize().disabled(empty)
             .accessibilityIdentifier("write.rewrite")

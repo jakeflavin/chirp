@@ -118,7 +118,7 @@ enum AttributedDocument {
 }
 
 /// Makes a saved copy of a web page: its text, layout and pictures in one file, as the browser's own
-/// "web archive". The page is loaded once, off screen, to make it.
+/// "web archive". The page is loaded once, off screen, with its scripts off, to make it.
 @MainActor
 final class PageSaver: NSObject, WKNavigationDelegate {
     private var done: ((Data?) -> Void)?
@@ -141,6 +141,9 @@ final class PageSaver: NSObject, WKNavigationDelegate {
             let configuration = WKWebViewConfiguration()
             // Nothing the page stores is kept after the copy is made.
             configuration.websiteDataStore = .nonPersistent()
+            // The page's own scripts do not run, so its analytics and trackers cannot run during the copy.
+            // The copy is the page as the site sent it; one that draws itself with scripts saves less.
+            configuration.defaultWebpagePreferences.allowsContentJavaScript = false
             let view = WKWebView(frame: NSRect(x: 0, y: 0, width: 1100, height: 1400), configuration: configuration)
             view.navigationDelegate = saver
             saver.view = view

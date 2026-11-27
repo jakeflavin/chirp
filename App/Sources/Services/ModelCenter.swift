@@ -37,10 +37,13 @@ enum ModelKind: String, CaseIterable, Identifiable {
         }
     }
 
+    /// The speech model's download in megabytes, from the size its file is checked against.
+    static var speechMegabytes: Int { Int((Double(Transcriber.modelBytes) / 1_000_000).rounded()) }
+
     /// Roughly how much it downloads.
     var approximateSize: String {
         switch self {
-        case .transcription: "730 MB"
+        case .transcription: "\(Self.speechMegabytes) MB"
         case .language: String(format: "%.1f GB", ModelCenter.languageSize.downloadGB)
         case .voice: "95 MB"
         case .speakers: "100 MB"
@@ -102,13 +105,21 @@ final class ModelCenter {
     private(set) var speechPrepared = false
     private var preparing = false
 
+    /// Downloads the speech model when the user starts it in onboarding, then makes it ready. It carries on
+    /// when the step that started it is left.
+    func startSpeechDownload() {
+        guard !state(.transcription).isBusy else { return }
+        Task { [weak self] in
+            guard let self, (try? await self.ensure(.transcription)) != nil else { return }
+            await self.prepareSpeech()
+        }
+    }
+
     /// Loads the speech model and waits until it answers quickly, for at most five minutes.
     func prepareSpeech() async {
         guard !speechPrepared, !preparing else { return }
         preparing = true
         defer { preparing = false }
-        // Wait for the download the user starts in onboarding.
-        while !Transcriber.isDownloaded, state(.transcription) == .notDownloaded { try? await Task.sleep(for: .seconds(1)) }
         guard (try? await ensure(.transcription)) != nil else { return }
         let deadline = Date().addingTimeInterval(300)
         while Date() < deadline {
@@ -143,6 +154,8 @@ final class ModelCenter {
     struct SummaryModel: Sendable, Equatable {
         /// The hub id.
         var id: String
+        /// The commit of the model's repository that is loaded.
+        var revision: String
         /// A LoRA adapter on the hub fused in as it loads, "repo@revision".
         var adapter: String?
         /// Asked with the prompt the adapter was trained on (`ReadController.summaryRequest`), not Chirp's own.
@@ -152,10 +165,10 @@ final class ModelCenter {
     }
 
     /// Qwen3-0.6B (8-bit) with the TLDR LoRA, the 2B's replacement for summaries on Macs that use the 2B: as
-    /// many wrong statements, in two-thirds the time and with less memory. The adapter is pinned
-    /// to the revision that was measured.
-    static let tldrSummaryModel = SummaryModel(
-        id: "mlx-community/Qwen3-0.6B-8bit", adapter: "phh/Qwen3-0.6B-TLDR-Lora@0f39534202828516c2645f1aeb8c5e9e9a0f6801",
+    /// many wrong statements, in two-thirds the time and with less memory. The model and the adapter are pinned
+    /// to the revisions that were measured.
+    nonisolated static let tldrSummaryModel = SummaryModel(
+        id: "mlx-community/Qwen3-0.6B-8bit", revision: "11de96878523501bcaa86104e3c186de07ff9068", adapter: "phh/Qwen3-0.6B-TLDR-Lora@0f39534202828516c2645f1aeb8c5e9e9a0f6801",
         tldrPrompt: true, name: "Qwen3 0.6B", downloadGB: 0.7)
 
     /// The model summaries are written with, or nil when they use the general language model. It takes the general one's
@@ -230,7 +243,7 @@ final class ModelCenter {
         await unload(.language)
         Self.sessionFallback = nil
         Self.languageChoice = size
-        Log.write("models", "language model: \(size?.name ?? "automatic") → \(Self.languageSize.name), Mac has \(Self.memoryBytes / 1_073_741_824) GB")
+        Log.write("models", "language model: \(size?.name ?? "automatic") → \(Self.languageSize.name), Mac has \(MacMemory.wholeGigabytes(Self.memoryBytes)) GB")
         states[.language] = Self.hubModelExists(Self.languageSize.modelID) ? .onDisk : .notDownloaded
         languageVersion += 1
     }
@@ -241,7 +254,8 @@ final class ModelCenter {
         languageForSummary = false
         if languageWantsSummary, let summary = Self.summaryModel {
             do {
-                try await language.load(modelID: summary.id, adapterID: summary.adapter, progress: report)
+                try await language.load(
+                    modelID: HubReference.joined(summary.id, revision: summary.revision), adapterID: summary.adapter, progress: report)
                 languageForSummary = true
                 Log.write("models", "language model for summaries: \(summary.id)\(summary.adapter.map { " + " + $0 } ?? "")")
                 return
@@ -260,7 +274,7 @@ final class ModelCenter {
                         throw ModelCenterError.noDiskSpace(size.name, size.downloadGB)
                     }
                 }
-                try await language.load(modelID: size.modelID, progress: report)
+                try await language.load(modelID: size.hubReference, progress: report)
                 return
             } catch {
                 guard let smaller = size.smaller, !(error is CancellationError) else { throw error }
@@ -273,8 +287,8 @@ final class ModelCenter {
         }
     }
 
-    /// Under about 12 GB, loading one heavy model unloads the others first.
-    let lowMemory = ModelCenter.memoryBytes < 12 * 1_073_741_824
+    /// Under about 12 GB, loading one heavy model unloads the others first (`MacMemory`).
+    let lowMemory = MacMemory.keepsOneHeavyModel(memoryBytes: ModelCenter.memoryBytes)
 
     /// Extra loaders and unloaders registered by features built on other models (voice, meeting…).
     private var loaders: [ModelKind: @MainActor (@escaping @Sendable (Double) -> Void) async throws -> Void] = [:]
@@ -362,7 +376,7 @@ final class ModelCenter {
         }
         diskChecks[.transcription] = { Transcriber.isDownloaded }
         diskChecks[.language] = { Self.hubModelExists(Self.languageSize.modelID) }
-        Log.write("models", "Mac has \(Self.memoryBytes / 1_073_741_824) GB; language model \(Self.languageSize.name) (\(Self.languageChoice == nil ? "automatic" : "chosen"))")
+        Log.write("models", "Mac has \(MacMemory.wholeGigabytes(Self.memoryBytes)) GB; language model \(Self.languageSize.name) (\(Self.languageChoice == nil ? "automatic" : "chosen"))")
         refresh()
     }
 

@@ -78,6 +78,11 @@ targets:
           - CFBundleTypeName: Documents Chirp can read aloud
             CFBundleTypeRole: Viewer
             LSItemContentTypes: [com.adobe.pdf, org.idpf.epub-container, org.openxmlformats.wordprocessingml.document, public.plain-text, public.audio]
+        # A Library row dragged onto a sidebar folder (LibraryDrag). Only Chirp reads it; other apps get the title.
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.jakeflavin.chirp.library-item
+            UTTypeDescription: Chirp Library item
+            UTTypeConformsTo: [public.data]
   ChirpUITests:
     type: bundle.ui-testing
     platform: macOS

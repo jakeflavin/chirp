@@ -60,12 +60,6 @@ import Testing
         try lib.delete(m)
         #expect(try lib.chunks().isEmpty)
     }
-
-    @Test func askContextNumbersPassages() {
-        let s = SemanticSearch.askContext(question: "When is the beta?", passages: [("Launch review", "The beta goes out on March 3rd.")])
-        #expect(s.contains("QUESTION: When is the beta?"))
-        #expect(s.contains("[1] (Launch review) The beta goes out on March 3rd."))
-    }
 }
 
 @Suite struct TranscriptSearchTests {

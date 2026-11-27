@@ -421,8 +421,6 @@ private struct ReadingPage: View {
                                     // Scrolling back to the sentence being read starts the following again.
                                     if visible, row.contains(place) { away = false }
                                 }
-                                // "Say it as" hangs below its word, over the rows after this one.
-                                .zIndex(sayRange.map { row.contains($0.location) } ?? false ? 1 : 0)
                         }
                     }
                     // Room at the foot for the bar that floats over the text.
@@ -607,9 +605,9 @@ private struct ReadingPage: View {
         for piece in pieces {
             if piece.asked {
                 asking = true
-                text = text + Text(piece.text).customAttribute(SayItAsAttribute())
+                text = Text("\(text)\(Text(piece.text).customAttribute(SayItAsAttribute()))")
             } else {
-                text = text + (piece.sentence == stop && stop != nil ? Text(piece.text).customAttribute(LeftOffAttribute()) : Text(piece.text))
+                text = Text("\(text)\(piece.sentence == stop && stop != nil ? Text(piece.text).customAttribute(LeftOffAttribute()) : Text(piece.text))")
             }
         }
         return text
@@ -620,17 +618,28 @@ private struct ReadingPage: View {
                     GeometryReader { proxy in
                         if stop != nil, let y = Self.markerY(layouts, in: proxy) {
                             Image("chirp.bookmarkFill").font(.system(size: 13)).foregroundStyle(Color.amber)
+                                // Amber alone is too faint on Paper: a thin On Amber edge holds its shape.
+                                .shadow(color: Color.onAmber.opacity(0.35), radius: 0, x: 0.5, y: 0)
+                                .shadow(color: Color.onAmber.opacity(0.35), radius: 0, x: -0.5, y: 0)
+                                .shadow(color: Color.onAmber.opacity(0.35), radius: 0, x: 0, y: 0.5)
+                                .shadow(color: Color.onAmber.opacity(0.35), radius: 0, x: 0, y: -0.5)
                                 .frame(width: 13, height: 18)
                                 .position(x: -16.5, y: y)
                                 .accessibilityLabel("You stopped here")
                                 .accessibilityIdentifier("read.leftOff")
                         }
                         if asking, let box = Self.askedBox(layouts, in: proxy) {
-                            // Under the word, kept inside the column.
-                            SayItAsPopover()
-                                .frame(width: SayItAsPopover.width)
-                                .fixedSize()
-                                .offset(x: max(0, min(box.minX - 12, proxy.size.width - SayItAsPopover.width)), y: box.maxY + 8)
+                            // A clear box over the word, for the popover to point at. Closing the popover
+                            // (a click away, Escape) closes "Say it as".
+                            // It opens under the word, as the card it replaces did.
+                            Color.clear
+                                .frame(width: max(1, box.width), height: max(1, box.height))
+                                .allowsHitTesting(false)
+                                .popover(isPresented: Binding(get: { reader.sayItAs?.place == .reader }, set: { if !$0 { reader.closeSayItAs() } }),
+                                         attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) {
+                                    SayItAsPopover().frame(width: SayItAsPopover.width)
+                                }
+                                .position(x: box.midX, y: box.midY)
                         }
                     }
                 }
@@ -797,27 +806,50 @@ struct ReadingDock: View {
                 row(scrubber: 60, time: false, voiceName: false, continueWord: false, sayItAsWord: false)
                 row(scrubber: 36, time: false, voiceName: false, continueWord: false, sayItAsWord: false)
             }
+            // Space plays or pauses (or continues), ← and → move a sentence; not while a field is typed in.
+            .playbackKeys { key in
+                switch key {
+                case .back: back()
+                case .forward: forward()
+                case .playPause: if canContinue { carryOn() } else { playPause() }
+                }
+            }
         }
     }
 
     /// Makes this the document the reader holds, when it was holding something else.
     private func take() { if !live { reader.open(item) } }
 
+    private func back() {
+        take()
+        reader.skip(-1)
+    }
+
+    private func forward() {
+        take()
+        reader.skip(1)
+    }
+
+    /// Continue: back to the place that was left, and on from there.
+    private func carryOn() {
+        take()
+        away = false
+        goToPlace()
+        reader.play()
+    }
+
+    private func playPause() {
+        take()
+        away = false
+        reader.toggle()
+    }
+
     private func row(scrubber: CGFloat, time: Bool, voiceName: Bool, continueWord: Bool, sayItAsWord: Bool) -> some View {
         @Bindable var reader = reader
         return HStack(spacing: 6) {
-            IconButton(symbol: "chirp.back", label: "Back a sentence", size: 34) {
-                take()
-                reader.skip(-1)
-            }
-            .keyboardShortcut(.leftArrow, modifiers: [])
+            IconButton(symbol: "chirp.back", label: "Back a sentence", size: 34, action: back)
             if canContinue {
-                Button {
-                    take()
-                    away = false
-                    goToPlace()
-                    reader.play()
-                } label: {
+                Button(action: carryOn) {
                     HStack(spacing: 6) {
                         Image("chirp.play").font(.system(size: 12))
                         if continueWord { Text("Continue").font(.system(size: 13, weight: .semibold)) }
@@ -830,23 +862,13 @@ struct ReadingDock: View {
                 }
                 .accessibilityLabel("Continue")
                 .buttonStyle(.plain)
-                .keyboardShortcut(.space, modifiers: [])
                 .help("Carry on from where you stopped")
                 .accessibilityIdentifier("read.continue")
             } else {
-                IconButton(symbol: playing ? "chirp.pause" : "chirp.play", label: playing ? "Pause" : "Play", size: 34, active: playing) {
-                    take()
-                    away = false
-                    reader.toggle()
-                }
-                .keyboardShortcut(.space, modifiers: [])
-                .accessibilityIdentifier("read.play")
+                IconButton(symbol: playing ? "chirp.pause" : "chirp.play", label: playing ? "Pause" : "Play", size: 34, active: playing, action: playPause)
+                    .accessibilityIdentifier("read.play")
             }
-            IconButton(symbol: "chirp.forward", label: "Forward a sentence", size: 34) {
-                take()
-                reader.skip(1)
-            }
-            .keyboardShortcut(.rightArrow, modifiers: [])
+            IconButton(symbol: "chirp.forward", label: "Forward a sentence", size: 34, action: forward)
             Scrubber(value: sentences.isEmpty ? 0 : Double(index) / Double(sentences.count)) { fraction in
                 guard !sentences.isEmpty else { return }
                 take()
@@ -984,15 +1006,12 @@ private struct TranscriptDocument: View {
         let time = mine ? playback.time : 0
         return HStack(spacing: 6) {
             IconButton(symbol: "chirp.back15", label: "Back 15 seconds", size: 34) { playback.seek(audio, to: time - 15) }
-                .keyboardShortcut(.leftArrow, modifiers: [])
             IconButton(symbol: mine && playback.isPlaying ? "chirp.pause" : "chirp.play", label: mine && playback.isPlaying ? "Pause" : "Play", size: 34, active: mine && playback.isPlaying) {
                 playback.playPause(audio)
                 playback.setRate(speed)
             }
-            .keyboardShortcut(.space, modifiers: [])
             .accessibilityIdentifier("transcript.play")
             IconButton(symbol: "chirp.fwd15", label: "Forward 15 seconds", size: 34) { playback.seek(audio, to: time + 15) }
-                .keyboardShortcut(.rightArrow, modifiers: [])
             Scrubber(value: total > 0 ? time / total : 0) { fraction in playback.seek(audio, to: fraction * total) }
                 .frame(width: 180)
                 .accessibilityLabel("Place in the recording")
@@ -1019,6 +1038,17 @@ private struct TranscriptDocument: View {
         .padding(.leading, 6).padding(.trailing, 8)
         .frame(height: 46)
         .chirpGlassCapsule()
+        // Space plays or pauses, ← and → move 15 seconds; not while a field is typed in.
+        .playbackKeys { key in
+            let now = mine ? playback.time : 0
+            switch key {
+            case .back: playback.seek(audio, to: now - 15)
+            case .forward: playback.seek(audio, to: now + 15)
+            case .playPause:
+                playback.playPause(audio)
+                playback.setRate(speed)
+            }
+        }
     }
 }
 
@@ -1026,6 +1056,12 @@ private struct TranscriptDocument: View {
 
 /// An empty page: the bird, one line, and the one button that fills the page. The
 /// bird hops in once when the page opens, then sits. It is never on a page that has content.
+extension EmptyPage where Action == EmptyView {
+    init(_ title: String, line: String, look: Look = .ahead) {
+        self.init(title, line: line, look: look) { EmptyView() }
+    }
+}
+
 struct EmptyPage<Action: View>: View {
     /// What the bird does once it has landed.
     enum Look {
@@ -1044,7 +1080,7 @@ struct EmptyPage<Action: View>: View {
     @State private var landed = false
     @State private var gaze = CGPoint.zero
 
-    init(_ title: String, line: String, look: Look = .ahead, @ViewBuilder action: @escaping () -> Action = { EmptyView() }) {
+    init(_ title: String, line: String, look: Look = .ahead, @ViewBuilder action: @escaping () -> Action) {
         self.title = title
         self.line = line
         self.look = look
@@ -1164,7 +1200,7 @@ private struct SayItAsPopover: View {
                 .padding(.horizontal, 9).frame(height: 30)
                 .background(Color.card.opacity(0.9), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.ink.opacity(0.16)))
-                .overlay(RoundedRectangle(cornerRadius: 9.5, style: .continuous).strokeBorder(Color.amber.opacity(typing ? 0.4 : 0), lineWidth: 3).padding(-1.5))
+                .overlay(RoundedRectangle(cornerRadius: 9.5, style: .continuous).strokeBorder(Color.accentColor.opacity(typing ? 0.5 : 0), lineWidth: 3).padding(-1.5))
                 .focused($typing)
                 .onSubmit { reader.saveSayItAs() }
                 .onExitCommand { reader.closeSayItAs() }
@@ -1182,10 +1218,8 @@ private struct SayItAsPopover: View {
             }
             .padding(.top, 10)
         }
+        // A system popover draws its own surface, edge and arrow.
         .padding(.horizontal, 12).padding(.top, 12).padding(.bottom, 10)
-        .background(Color.float, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.ink.opacity(0.13)))
-        .shadow(color: Color.black.opacity(0.18), radius: 14, y: 6)
         .onAppear { typing = true }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Say it as")
