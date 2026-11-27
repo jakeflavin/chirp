@@ -17,7 +17,7 @@ public struct LiveCut: Sendable, Equatable {
     /// No piece waits for a long pause past this length.
     public var maxSeconds: Double
 
-    public init(minSeconds: Double = 1.5, pauseSeconds: Double = 0.5, maxSeconds: Double = 12) {
+    public init(minSeconds: Double = 1.5, pauseSeconds: Double = 0.35, maxSeconds: Double = 6) {
         self.minSeconds = max(0.5, minSeconds)
         self.pauseSeconds = max(0.1, pauseSeconds)
         self.maxSeconds = max(self.minSeconds + 1, maxSeconds)

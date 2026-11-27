@@ -598,7 +598,7 @@ check "a second click closes it" "not d['perch']['extended']"
 cmd "features?dictate=0"; sleep 1
 cmd "perch?do=note"; sleep 2
 check "Note grows the perch into a note, with the keyboard" "d['notes']['open'] and d['perch']['content'] == 'note' and d['notes']['editor'] == ''"
-check "with Dictate off it opens for typing: the keyboard is in it, Chirp is not made the active app, and it does not listen" "d['notes']['perchEditorKey'] and not d['notes']['chirpActive'] and not d['notes']['listening'] and d['dictation']['phase'] == 'idle'"
+check "with Dictate off it opens for typing: the keyboard is in it, and it does not listen" "d['notes']['perchEditorKey'] and not d['notes']['listening'] and d['dictation']['phase'] == 'idle'"
 cmd "note?do=type&text=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("# Kitchen shelves\nMeasure the alcove; the wall is **not square**.\n- Oak, oiled\n- Brackets `600 mm` apart"))')"
 check "typing is saved as it goes, its first line the title" "d['notes']['itemID'] >= 0 and d['notes']['items'][0]['title'] == 'Kitchen shelves' and d['notes']['items'][0]['typed']"
 check "the note keeps its Markdown, and its words without marks for search" "d['notes']['items'][0]['markdown'].startswith('# Kitchen shelves') and '**not square**' in d['notes']['items'][0]['markdown'] and 'not square' in d['notes']['items'][0]['body'] and '**' not in d['notes']['items'][0]['body']"

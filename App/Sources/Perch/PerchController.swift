@@ -275,6 +275,8 @@ final class PerchController {
     private var notesToShow: Int64?
     /// The recording whose finished notes are shown in a card above the perch; nil when no such card is open.
     var finished: SavedItem?
+    /// The app that was in front when a note brought Chirp forward to take the keyboard; it comes back when the note closes.
+    var cameForward: NSRunningApplication?
 
     /// Opens the recording from the card in the Library.
     func openFinished() {

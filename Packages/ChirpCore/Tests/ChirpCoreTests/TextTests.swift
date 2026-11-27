@@ -309,7 +309,16 @@ import Testing
 
 @Suite struct LiveCutTests {
     private func s(_ seconds: Double) -> Int { Int(seconds * 16_000) }
-    let cut = LiveCut()
+    // The rule with round numbers; the defaults are checked on their own below.
+    let cut = LiveCut(minSeconds: 1.5, pauseSeconds: 0.5, maxSeconds: 12)
+
+    @Test func byDefaultWordsShowWithinSixSeconds() {
+        // Eleven seconds of talking with only short breaths: cut at the longest breath before 6 s.
+        let speech = [s(0)..<s(3), s(3.2)..<s(5), s(5.25)..<s(11)]
+        #expect(LiveCut().next(speech: speech, samples: s(11)) == .transcribe(upTo: (s(5) + s(5.25)) / 2))
+        // A breath of 0.4 s is enough to end a phrase.
+        #expect(LiveCut().next(speech: [s(0.2)..<s(2.5)], samples: s(2.9)) == .transcribe(upTo: s(2.5) + s(0.35) / 2))
+    }
 
     @Test func waitsWhileThePhraseGoesOn() {
         // Talking from 0.2 s and still talking at 3 s.

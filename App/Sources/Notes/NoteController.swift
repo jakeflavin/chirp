@@ -84,8 +84,8 @@ final class NoteController {
         dictated = false
         listenProblem = nil
         closeWhenDone = false
-        // The editor is made for this note when the perch shows it (`attach`).
-        editor = nil
+        // The perch's editor is made once and kept between notes (`attach`), so it is not let go here:
+        // SwiftUI does not make it again for the next note, and without it nothing could reach the note.
         isOpen = true
         Log.write("notes", "a note was opened in the perch")
         onOpen?()
@@ -263,7 +263,6 @@ final class NoteController {
         finishing = false
         openSession = 0
         editor?.endLive()
-        editor = nil
         isOpen = false
         Log.write("notes", saved == nil ? "the note was closed empty and not kept" : "the note was closed and saved")
         onClose?(saved, announce)

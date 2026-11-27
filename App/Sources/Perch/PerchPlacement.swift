@@ -569,13 +569,31 @@ extension PerchController {
         panel.makeKey()
         Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(300))
-            self?.notes.focusEditor()
+            guard let self, self.notes.isOpen else { return }
+            self.notes.focusEditor()
+            // macOS can refuse the key window to an app in the background. Then Chirp comes forward for as
+            // long as the note is open, and the app the user was in comes back when it closes.
+            if !self.panel.isKeyWindow, !NSApp.isActive {
+                self.cameForward = NSWorkspace.shared.frontmostApplication
+                NSApp.activate()
+                self.panel.makeKey()
+                self.notes.focusEditor()
+                Log.write("notes", "the perch could not take the keyboard in the background, so Chirp came forward")
+            }
         }
+    }
+
+    /// Gives the front back to the app the user was in, when a note brought Chirp forward to take the keyboard.
+    func noteGaveBackFront() {
+        guard let app = cameForward else { return }
+        cameForward = nil
+        if NSApp.isActive, !(AppDelegate.mainWindow?.isVisible ?? false) { app.activate() }
     }
 
     /// The note was closed: the keyboard goes back, and the bird says where it went.
     func noteClosed(_ saved: SavedItem?, announce: Bool) {
         giveKeyboardBack()
+        noteGaveBackFront()
         guard announce, let saved else { return }
         say("Saved to Notes", action: ("Open", { [weak self] in
             self?.app.open(saved)
