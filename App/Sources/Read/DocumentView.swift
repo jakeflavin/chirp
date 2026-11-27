@@ -421,8 +421,6 @@ private struct ReadingPage: View {
                                     // Scrolling back to the sentence being read starts the following again.
                                     if visible, row.contains(place) { away = false }
                                 }
-                                // "Say it as" hangs below its word, over the rows after this one.
-                                .zIndex(sayRange.map { row.contains($0.location) } ?? false ? 1 : 0)
                         }
                     }
                     // Room at the foot for the bar that floats over the text.
@@ -631,11 +629,17 @@ private struct ReadingPage: View {
                                 .accessibilityIdentifier("read.leftOff")
                         }
                         if asking, let box = Self.askedBox(layouts, in: proxy) {
-                            // Under the word, kept inside the column.
-                            SayItAsPopover()
-                                .frame(width: SayItAsPopover.width)
-                                .fixedSize()
-                                .offset(x: max(0, min(box.minX - 12, proxy.size.width - SayItAsPopover.width)), y: box.maxY + 8)
+                            // A clear box over the word, for the popover to point at. Closing the popover
+                            // (a click away, Escape) closes "Say it as".
+                            // It opens under the word, as the card it replaces did.
+                            Color.clear
+                                .frame(width: max(1, box.width), height: max(1, box.height))
+                                .allowsHitTesting(false)
+                                .popover(isPresented: Binding(get: { reader.sayItAs?.place == .reader }, set: { if !$0 { reader.closeSayItAs() } }),
+                                         attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) {
+                                    SayItAsPopover().frame(width: SayItAsPopover.width)
+                                }
+                                .position(x: box.midX, y: box.midY)
                         }
                     }
                 }
@@ -1190,7 +1194,7 @@ private struct SayItAsPopover: View {
                 .padding(.horizontal, 9).frame(height: 30)
                 .background(Color.card.opacity(0.9), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.ink.opacity(0.16)))
-                .overlay(RoundedRectangle(cornerRadius: 9.5, style: .continuous).strokeBorder(Color.amber.opacity(typing ? 0.4 : 0), lineWidth: 3).padding(-1.5))
+                .overlay(RoundedRectangle(cornerRadius: 9.5, style: .continuous).strokeBorder(Color.accentColor.opacity(typing ? 0.5 : 0), lineWidth: 3).padding(-1.5))
                 .focused($typing)
                 .onSubmit { reader.saveSayItAs() }
                 .onExitCommand { reader.closeSayItAs() }
@@ -1208,10 +1212,8 @@ private struct SayItAsPopover: View {
             }
             .padding(.top, 10)
         }
+        // A system popover draws its own surface, edge and arrow.
         .padding(.horizontal, 12).padding(.top, 12).padding(.bottom, 10)
-        .background(Color.float, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.ink.opacity(0.13)))
-        .shadow(color: Color.black.opacity(0.18), radius: 14, y: 6)
         .onAppear { typing = true }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Say it as")
