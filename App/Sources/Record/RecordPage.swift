@@ -671,6 +671,8 @@ struct PlaybackDock: View {
             row(scrubber: 60, time: false, back: false, total: false)
         }
         .onAppear { length = playback.length(of: url) }
+        // Space plays or pauses, but not while the title or a note is being typed.
+        .playbackKeys([.playPause]) { _ in playback.playPause(url) }
     }
 
     private func row(scrubber: CGFloat, time showsTime: Bool, back: Bool = true, total showsTotal: Bool = true) -> some View {
@@ -678,7 +680,6 @@ struct PlaybackDock: View {
             IconButton(symbol: mine && playback.isPlaying ? "chirp.pause" : "chirp.play", label: mine && playback.isPlaying ? "Pause" : "Play", size: 34, active: true) {
                 playback.playPause(url)
             }
-            .keyboardShortcut(.space, modifiers: [])
             .accessibilityIdentifier("meeting.play")
             if back { IconButton(symbol: "chirp.back15", label: "Back 15 seconds", size: 34) { playback.seek(url, to: time - 15) } }
             Scrubber(value: total > 0 ? time / total : 0, marks: total > 0 ? marks.map { $0 / total } : []) { fraction in

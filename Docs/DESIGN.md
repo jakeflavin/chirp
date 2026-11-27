@@ -7,7 +7,7 @@ The shared pieces live in `App/Sources/Design/`:
 
 | File | What it holds |
 |---|---|
-| `Theme.swift` | Colour tokens, type tokens, page layout, and the shared views (`Page`, `PageHeader`, `SectionHeading`, `HeadingLink`, `ItemRow`, `IconButton`, `ActButton`, `ChipLabel`, `Card`, `EmptyLine`, `SourceLine`, `ProgressBar`, `FlowLayout`, `Image.toolbarIcon`) |
+| `Theme.swift` | Colour tokens, type tokens, page layout, and the shared views (`Page`, `PageHeader`, `SectionHeading`, `HeadingLink`, `ItemRow`, `IconButton`, `ActButton`, `ChipLabel`, `Card`, `EmptyLine`, `SourceLine`, `ProgressBar`, `FlowLayout`, `Image.toolbarIcon`), and `playbackKeys` for a player's keys |
 | `Glass.swift` | Liquid Glass surfaces (`chirpGlass`, `chirpGlassCapsule`), fills on glass (`GlassFill`), shape motion (`GlassMotion`) |
 | `Bird.swift` | The bird, drawn in code, with its moods |
 | `Beta.swift` | The Beta flag, `BetaTag`, `BetaSidebarHeader` |
@@ -602,6 +602,8 @@ User-facing text is plain and short.
   - Escape closes what the perch is showing, and cancels dictation.
   - Arrow keys move through the sidebar, lists and Home's rows; the menu bar popover is keyboard driven.
   - ⌘F searches the Library.
+  - A player's bar (a document, a transcript, a recording) takes Space, ← and → through `playbackKeys`,
+    never a `.keyboardShortcut` with no modifiers, so the keys stay with a text field while one is typed in.
   - Chirp's global shortcuts are right ⌥ plus a letter, hold right ⌥ to dictate, ⌥Space hands-free,
     ⌥⇥ fixes the sentence at the cursor. All can be changed in Settings › Shortcuts.
 - **Focus.** Panels over other apps never take keyboard focus unless the user is typing in them (a note),

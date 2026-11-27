@@ -797,27 +797,50 @@ struct ReadingDock: View {
                 row(scrubber: 60, time: false, voiceName: false, continueWord: false, sayItAsWord: false)
                 row(scrubber: 36, time: false, voiceName: false, continueWord: false, sayItAsWord: false)
             }
+            // Space plays or pauses (or continues), ← and → move a sentence; not while a field is typed in.
+            .playbackKeys { key in
+                switch key {
+                case .back: back()
+                case .forward: forward()
+                case .playPause: if canContinue { carryOn() } else { playPause() }
+                }
+            }
         }
     }
 
     /// Makes this the document the reader holds, when it was holding something else.
     private func take() { if !live { reader.open(item) } }
 
+    private func back() {
+        take()
+        reader.skip(-1)
+    }
+
+    private func forward() {
+        take()
+        reader.skip(1)
+    }
+
+    /// Continue: back to the place that was left, and on from there.
+    private func carryOn() {
+        take()
+        away = false
+        goToPlace()
+        reader.play()
+    }
+
+    private func playPause() {
+        take()
+        away = false
+        reader.toggle()
+    }
+
     private func row(scrubber: CGFloat, time: Bool, voiceName: Bool, continueWord: Bool, sayItAsWord: Bool) -> some View {
         @Bindable var reader = reader
         return HStack(spacing: 6) {
-            IconButton(symbol: "chirp.back", label: "Back a sentence", size: 34) {
-                take()
-                reader.skip(-1)
-            }
-            .keyboardShortcut(.leftArrow, modifiers: [])
+            IconButton(symbol: "chirp.back", label: "Back a sentence", size: 34, action: back)
             if canContinue {
-                Button {
-                    take()
-                    away = false
-                    goToPlace()
-                    reader.play()
-                } label: {
+                Button(action: carryOn) {
                     HStack(spacing: 6) {
                         Image("chirp.play").font(.system(size: 12))
                         if continueWord { Text("Continue").font(.system(size: 13, weight: .semibold)) }
@@ -830,23 +853,13 @@ struct ReadingDock: View {
                 }
                 .accessibilityLabel("Continue")
                 .buttonStyle(.plain)
-                .keyboardShortcut(.space, modifiers: [])
                 .help("Carry on from where you stopped")
                 .accessibilityIdentifier("read.continue")
             } else {
-                IconButton(symbol: playing ? "chirp.pause" : "chirp.play", label: playing ? "Pause" : "Play", size: 34, active: playing) {
-                    take()
-                    away = false
-                    reader.toggle()
-                }
-                .keyboardShortcut(.space, modifiers: [])
-                .accessibilityIdentifier("read.play")
+                IconButton(symbol: playing ? "chirp.pause" : "chirp.play", label: playing ? "Pause" : "Play", size: 34, active: playing, action: playPause)
+                    .accessibilityIdentifier("read.play")
             }
-            IconButton(symbol: "chirp.forward", label: "Forward a sentence", size: 34) {
-                take()
-                reader.skip(1)
-            }
-            .keyboardShortcut(.rightArrow, modifiers: [])
+            IconButton(symbol: "chirp.forward", label: "Forward a sentence", size: 34, action: forward)
             Scrubber(value: sentences.isEmpty ? 0 : Double(index) / Double(sentences.count)) { fraction in
                 guard !sentences.isEmpty else { return }
                 take()
@@ -984,15 +997,12 @@ private struct TranscriptDocument: View {
         let time = mine ? playback.time : 0
         return HStack(spacing: 6) {
             IconButton(symbol: "chirp.back15", label: "Back 15 seconds", size: 34) { playback.seek(audio, to: time - 15) }
-                .keyboardShortcut(.leftArrow, modifiers: [])
             IconButton(symbol: mine && playback.isPlaying ? "chirp.pause" : "chirp.play", label: mine && playback.isPlaying ? "Pause" : "Play", size: 34, active: mine && playback.isPlaying) {
                 playback.playPause(audio)
                 playback.setRate(speed)
             }
-            .keyboardShortcut(.space, modifiers: [])
             .accessibilityIdentifier("transcript.play")
             IconButton(symbol: "chirp.fwd15", label: "Forward 15 seconds", size: 34) { playback.seek(audio, to: time + 15) }
-                .keyboardShortcut(.rightArrow, modifiers: [])
             Scrubber(value: total > 0 ? time / total : 0) { fraction in playback.seek(audio, to: fraction * total) }
                 .frame(width: 180)
                 .accessibilityLabel("Place in the recording")
@@ -1019,6 +1029,17 @@ private struct TranscriptDocument: View {
         .padding(.leading, 6).padding(.trailing, 8)
         .frame(height: 46)
         .chirpGlassCapsule()
+        // Space plays or pauses, ← and → move 15 seconds; not while a field is typed in.
+        .playbackKeys { key in
+            let now = mine ? playback.time : 0
+            switch key {
+            case .back: playback.seek(audio, to: now - 15)
+            case .forward: playback.seek(audio, to: now + 15)
+            case .playPause:
+                playback.playPause(audio)
+                playback.setRate(speed)
+            }
+        }
     }
 }
 

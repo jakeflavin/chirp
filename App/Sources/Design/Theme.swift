@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -372,6 +373,90 @@ extension View {
             }
             return true
         }
+    }
+
+    /// Space, ← and → for a player's bar, anywhere in the bar's window, as a media app takes them. They
+    /// do nothing while a text field or text view has the keyboard, so typing a space or moving the cursor
+    /// in a field on the same page never plays or skips. `press` is told which key; `keys` limits which
+    /// are taken (a bar with no back or forward takes only Space).
+    func playbackKeys(_ keys: Set<PlaybackKey> = Set(PlaybackKey.allCases), press: @escaping (PlaybackKey) -> Void) -> some View {
+        modifier(PlaybackKeys(keys: keys, press: press))
+    }
+}
+
+/// A key `playbackKeys` takes.
+enum PlaybackKey: CaseIterable {
+    case playPause, back, forward
+
+    init?(keyCode: UInt16) {
+        switch keyCode {
+        case 49: self = .playPause
+        case 123: self = .back
+        case 124: self = .forward
+        default: return nil
+        }
+    }
+}
+
+/// Watches the keys of the window the view is in. A `.keyboardShortcut` with no modifiers fires even
+/// while a text field has the keyboard, and `.onKeyPress` needs the bar itself to have focus, which a
+/// list beside it usually holds; a key monitor that steps aside for text does what both should.
+private struct PlaybackKeys: ViewModifier {
+    let keys: Set<PlaybackKey>
+    let press: (PlaybackKey) -> Void
+    @State private var box = Box()
+
+    /// What the monitor reads when a key comes in. Kept current on every draw, so the monitor never
+    /// acts on the item the bar showed when it appeared.
+    @MainActor final class Box {
+        var keys: Set<PlaybackKey> = []
+        var press: (PlaybackKey) -> Void = { _ in }
+        /// A view in the bar's window, to tell its window's keys from another window's.
+        weak var anchor: NSView?
+        var monitor: Any?
+    }
+
+    func body(content: Content) -> some View {
+        box.keys = keys
+        box.press = press
+        return content
+            .background(Anchor(box: box).frame(width: 0, height: 0).accessibilityHidden(true))
+            .onAppear(perform: start)
+            .onDisappear(perform: stop)
+    }
+
+    private func start() {
+        guard box.monitor == nil else { return }
+        let box = box
+        box.monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            // Local monitors are called on the main thread.
+            let handled = MainActor.assumeIsolated { () -> Bool in
+                guard let window = box.anchor?.window, event.window === window, let key = PlaybackKey(keyCode: event.keyCode),
+                    box.keys.contains(key), event.modifierFlags.intersection([.command, .option, .control, .shift]).isEmpty,
+                    !(key == .playPause && event.isARepeat),
+                    // A field being typed in keeps its keys.
+                    !(window.firstResponder is NSText)
+                else { return false }
+                box.press(key)
+                return true
+            }
+            return handled ? nil : event
+        }
+    }
+
+    private func stop() {
+        if let monitor = box.monitor { NSEvent.removeMonitor(monitor) }
+        box.monitor = nil
+    }
+
+    private struct Anchor: NSViewRepresentable {
+        let box: Box
+        func makeNSView(context: Context) -> NSView {
+            let view = NSView()
+            box.anchor = view
+            return view
+        }
+        func updateNSView(_ view: NSView, context: Context) { box.anchor = view }
     }
 }
 
