@@ -35,7 +35,7 @@ User-Agent, it is listed.
 
 | What | When | To | What is sent | Code |
 |---|---|---|---|---|
-| Speech model (Parakeet, 730 MB) | When onboarding opens on first run (without a separate prompt), or the first time dictation, a recording or an import needs it | `huggingface.co` (and the download host it redirects to) | A GET for one pinned file. Default system User-Agent | `Transcriber.download` in `Packages/ChirpML/Sources/ChirpML/Transcriber.swift` |
+| Speech model (Parakeet, 730 MB) | When you press Download in onboarding (which shows its size first), or the first time dictation, a recording or an import needs it | `huggingface.co` (and the download host it redirects to) | A GET for one pinned file. Default system User-Agent | `Transcriber.download` in `Packages/ChirpML/Sources/ChirpML/Transcriber.swift` |
 | Language model (Qwen3.5, 1.6 to 6 GB by size) | The first time a rewrite, meeting notes, a deeper writing check or a summary needs it | `huggingface.co` | Hub API and file requests from the swift-huggingface downloader. If a Hugging Face token is present in the environment or the Hugging Face cache, the library may send it (verify) | `LanguageEngine.load` in `ChirpML/LanguageEngine.swift` |
 | Summary model and its adapter (0.7 GB) | The first summary, on Macs whose language model is the 2B | `huggingface.co` | Same as above | `LanguageEngine.load` (with `adapterID`) |
 | Search model (bge-small, 130 MB) | When you turn on search by meaning | `huggingface.co` | Same as above | `EmbedEngine.load` in `ChirpML/EmbedEngine.swift` |

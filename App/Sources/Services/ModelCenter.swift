@@ -37,10 +37,13 @@ enum ModelKind: String, CaseIterable, Identifiable {
         }
     }
 
+    /// The speech model's download in megabytes, from the size its file is checked against.
+    static var speechMegabytes: Int { Int((Double(Transcriber.modelBytes) / 1_000_000).rounded()) }
+
     /// Roughly how much it downloads.
     var approximateSize: String {
         switch self {
-        case .transcription: "730 MB"
+        case .transcription: "\(Self.speechMegabytes) MB"
         case .language: String(format: "%.1f GB", ModelCenter.languageSize.downloadGB)
         case .voice: "95 MB"
         case .speakers: "100 MB"
@@ -102,13 +105,21 @@ final class ModelCenter {
     private(set) var speechPrepared = false
     private var preparing = false
 
+    /// Downloads the speech model when the user starts it in onboarding, then makes it ready. It carries on
+    /// when the step that started it is left.
+    func startSpeechDownload() {
+        guard !state(.transcription).isBusy else { return }
+        Task { [weak self] in
+            guard let self, (try? await self.ensure(.transcription)) != nil else { return }
+            await self.prepareSpeech()
+        }
+    }
+
     /// Loads the speech model and waits until it answers quickly, for at most five minutes.
     func prepareSpeech() async {
         guard !speechPrepared, !preparing else { return }
         preparing = true
         defer { preparing = false }
-        // Wait for the download the user starts in onboarding.
-        while !Transcriber.isDownloaded, state(.transcription) == .notDownloaded { try? await Task.sleep(for: .seconds(1)) }
         guard (try? await ensure(.transcription)) != nil else { return }
         let deadline = Date().addingTimeInterval(300)
         while Date() < deadline {

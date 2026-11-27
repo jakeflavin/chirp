@@ -260,7 +260,8 @@ launch ─► Main.main(): helper flag? ─yes─► run helper, never return
   Closing the window does not quit (`applicationShouldTerminateAfterLastWindowClosed` is false).
 - **Onboarding.** `AppModel.showOnboarding` is true until the `onboardingDone` setting is saved.
   `FirstRunWindow` shows `OnboardingView` in its own small window. Its steps are filtered by which
-  features are on. Opening it starts the speech model download straight away. Leaving it adds one
+  features are on. It downloads no model until the user presses a Download button (the speech model's
+  on the Dictation step, each model's or "Download all" on the Models step). Leaving it adds one
   sample document (`FirstData`) and opens the Library on Home. It can be reopened from Settings ›
   General; that reopening resets nothing.
 - **Menu bar.** `MenuBarModel` and `MenuBarPopover` (`Shell/MenuBarPopover.swift`) use an

@@ -252,8 +252,9 @@ Debug hooks: `settings`, `settings-tab`, `features`, `language-size`, `danger`, 
 `Onboarding/OnboardingView.swift`, `Onboarding/OnboardingSteps.swift`, shown by `FirstRunWindow` in its
 own small window on first run. Steps: Features, Dictation (try it), Shortcuts, Permissions, Models,
 Language model, Writing, Notes, Recording, Reading; steps for switched-off features are left out. Each
-step holds the real control, so what is set there is set for good. Opening it starts the speech model
-download. Leaving it adds one short sample document to Home and opens the Library. Reopened from
+step holds the real control, so what is set there is set for good. Nothing downloads until the user
+starts it: the Dictation step shows the speech model's size with a button to download it, and the Models
+step has a Download button per model and "Download all". Leaving it adds one short sample document to Home and opens the Library. Reopened from
 Settings › General, it shows current values and resets nothing. Debug hooks: `onboarding`,
 `onboarding-step`, `onboarding-do`; launch flag `--skip-onboarding`.
 
