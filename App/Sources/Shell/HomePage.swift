@@ -270,7 +270,10 @@ struct HomePage: View {
                         HStack(spacing: 2) {
                             IconButton(symbol: copiedID == item.id ? "chirp.check" : "chirp.copy", label: item.kind == .meeting || item.kind == .voiceNote ? "Copy notes" : "Copy") { copy(item) }
                             if let file = item.audioFile {
-                                IconButton(symbol: "chirp.play", label: "Play") { AudioPlayback.shared.toggle(ChirpStore.audioDirectory.appendingPathComponent(file)) }
+                                let url = ChirpStore.audioDirectory.appendingPathComponent(file)
+                                // Pause while this item's own audio is the one playing.
+                                let playing = AudioPlayback.shared.current == url && AudioPlayback.shared.isPlaying
+                                IconButton(symbol: playing ? "chirp.pause" : "chirp.play", label: playing ? "Pause" : "Play") { AudioPlayback.shared.toggle(url) }
                             } else if Features.on(.read) {
                                 IconButton(symbol: "chirp.read", label: "Read aloud") { readAloud(item) }
                             }
@@ -283,7 +286,8 @@ struct HomePage: View {
                                     .frame(width: 28, height: 28).contentShape(Circle())
                             }
                             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
-                            .accessibilityLabel("More")
+                            .help("More")
+                            .accessibilityLabel("More for \(LibraryRows.title(item))")
                         }
                     }
                     .onTapGesture { app.open(item) }

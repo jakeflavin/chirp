@@ -75,7 +75,8 @@ struct FolderPage: View {
                         .frame(width: 28, height: 28).contentShape(Circle())
                 }
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
-                .accessibilityLabel("More")
+                .help("More")
+                .accessibilityLabel("More for \(LibraryRows.title(item))")
             }
         }
         .onTapGesture { app.open(item) }
