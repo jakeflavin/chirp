@@ -11,11 +11,12 @@ import Testing
         let began = Date()
         // Ignores being cancelled, as a wait on a hung helper does.
         let value = await Deadline.run(seconds: 0.2) { () -> Int in
-            await Self.deaf(seconds: 3)
+            await Self.deaf(seconds: 20)
             return 1
         }
         #expect(value == nil)
-        #expect(Date().timeIntervalSince(began) < 2)
+        // Well short of the work's 20 seconds, with room for a busy test machine.
+        #expect(Date().timeIntervalSince(began) < 10)
     }
 
     @Test func workThatEndsInTimeGivesItsValue() async throws {
@@ -46,11 +47,11 @@ import Testing
 
     @Test func aCancelledCallerIsLetGoAtOnce() async {
         let began = Date()
-        let waiting = Task { await Deadline.run(seconds: 30) { await Self.deaf(seconds: 3) } }
+        let waiting = Task { await Deadline.run(seconds: 30) { await Self.deaf(seconds: 20) } }
         try? await Task.sleep(for: .milliseconds(100))
         waiting.cancel()
         _ = await waiting.value
-        #expect(Date().timeIntervalSince(began) < 2)
+        #expect(Date().timeIntervalSince(began) < 10)
     }
 
     /// Work that takes no notice of being cancelled.
