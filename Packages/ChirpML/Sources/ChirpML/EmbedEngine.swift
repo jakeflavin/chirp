@@ -12,7 +12,7 @@ actor EmbedEngine {
     /// The loaded model with its tokenizer, or nil when not loaded.
     private var container: EmbedderModelContainer?
 
-    /// Downloads the model if needed and loads it. `progress` reports 0…1.
+    /// Downloads the model if needed and loads it. `progress` reports 0…1. `modelID` is "repo@revision" (`HubReference`).
     func load(modelID: String, progress: (@Sendable (Double) -> Void)?) async throws {
         if container != nil { return }
         // Keep MLX's reusable buffer pool small; on an 8 GB Mac every spare megabyte matters. Without the limit
@@ -20,7 +20,7 @@ actor EmbedEngine {
         // model sets the same limit when it loads; whichever loads first, it is set.
         MLX.Memory.cacheLimit = 64 * 1_048_576
         container = try await EmbedderModelFactory.shared.loadContainer(
-            from: #hubDownloader(), using: #huggingFaceTokenizerLoader(), configuration: .init(id: modelID)
+            from: #hubDownloader(), using: #huggingFaceTokenizerLoader(), configuration: LanguageEngine.configuration(modelID)
         ) { p in
             progress?(p.fractionCompleted)
         }

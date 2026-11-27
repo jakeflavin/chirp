@@ -45,6 +45,8 @@ public actor Embedder {
     /// The model on Hugging Face. Vectors from different models cannot be compared, so changing this
     /// means everything already indexed has to be embedded again.
     public static let modelID = "BAAI/bge-small-en-v1.5"
+    /// The commit of that repository that is loaded, pinned so a change on the hub never reaches a Mac unasked.
+    static let revision = "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a"
     /// bge models expect this in front of a search query (not in front of the passages).
     static let queryPrefix = "Represent this sentence for searching relevant passages: "
     /// The helper process and the pipes to it, shared with the language model.
@@ -87,7 +89,7 @@ public actor Embedder {
         do {
             let helper = try await supervisor.ensureRunning()
             if loadedIn == helper { return }
-            try await supervisor.embedLoad(modelID: Self.modelID, progress: progress)
+            try await supervisor.embedLoad(modelID: HubReference.joined(Self.modelID, revision: Self.revision), progress: progress)
             loadedIn = helper
         } catch let failure as LanguageModelError {
             throw EmbedderError(failure)

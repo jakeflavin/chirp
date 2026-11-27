@@ -594,7 +594,7 @@ import Testing
 
     @Test func screenTimesAreShownAsClockTimes() {
         let context = RecordingContext(screens: [.init(at: 65, app: "Safari", text: "Roadmap for the year")])
-        #expect(context.passages().map { $0.title } == ["On screen at 1:05 in Safari"])
+        #expect(context.material()?.contains("[1:05 Safari]\nRoadmap for the year") == true)
     }
 
     @Test func theSameScreenAgainIsNotNew() {

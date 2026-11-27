@@ -5,7 +5,7 @@ import SwiftUI
 
 extension KeyboardShortcuts.Name {
     /// Starts a voice note, or stops the recording under way.
-    static let recordNote = Self("recordNote", default: .init(.n, modifiers: [.option]))
+    static let recordNote = Self("recordNote", initial: .init(.n, modifiers: [.option]))
 }
 
 /// The shortcut layout: everything under the right hand, so one hand reaches every action.

@@ -2,18 +2,18 @@ import ChirpCore
 import Darwin
 import Foundation
 
-// A helper process for one model, and the app's side of it. The reading voice, voice detection and
-// speaker labelling each run in one (the language and search models have theirs in `LanguageWorker`,
-// speech in `SpeechWorker`), so that the app process loads no model: a fault in a model ends only its
-// helper, and ending the helper gives all of its memory back.
+// A helper process for one model, and the app's side of it. The reading voice, voice detection, speaker
+// labelling and the MLX models (the language model, the search model and the sentence checker, which share
+// one: `LanguageWorker`) each run in one; speech has its own in `SpeechWorker`. So the app process loads no
+// model: a fault in a model ends only its helper, and ending the helper gives all of its memory back.
 //
-// The pattern is the one built for the language helper and Chirp's speech worker: the app's own executable started
-// again with a flag; requests and replies as framed messages on its standard input and output; no
-// request retried by itself; the next request after a death starts a fresh helper; a limit on restarts;
-// a limit on silence; a cancel that is asked for first and enforced after a few seconds.
+// The pattern: the app's own executable started again with a flag; requests and replies as framed messages
+// on its standard input and output; no request retried by itself; the next request after a death starts a
+// fresh helper; a limit on restarts; a limit on silence; a cancel that is asked for first and enforced after
+// a few seconds.
 //
-// Unlike the language helper, every request carries a number and its reply carries the same one, so
-// several requests can be with the helper at once and none waits on another.
+// Every request carries a number and its reply carries the same one, so several requests can be with the
+// helper at once and none waits on another.
 
 /// What can go wrong with a helper, in words for the user. `what` is the thing that runs in it, as it
 /// reads in a sentence: "reading voice", "voice detection", "speaker labelling".
@@ -41,9 +41,10 @@ public enum HelperError: LocalizedError, Equatable {
 enum HelperFrameKind: UInt8 {
     /// A request, and the cancelling of one by its number.
     case request = 1, cancel = 2
-    /// The four things that can come back for a request: word that it is still at work (a download), its
-    /// answer, a refusal with the reason, and word that it was cancelled.
-    case progress = 101, reply = 102, failed = 103, cancelled = 104
+    /// The things that can come back for a request: word that it is still at work (a download), its
+    /// answer, a refusal with the reason, word that it was cancelled, and the next piece of an answer that
+    /// streams (generated text, or one answer of a batch).
+    case progress = 101, reply = 102, failed = 103, cancelled = 104, partial = 105
 }
 
 /// One message: its kind, the number of the request it belongs to, the name of what is asked (requests
@@ -99,6 +100,15 @@ public enum HelperWorker {
     /// What a handler is given and gives back: the request's JSON and bytes, a way to report progress,
     /// and the answer's JSON and bytes.
     typealias Handler = @Sendable (_ json: Data, _ blob: Data, _ progress: @Sendable (Double) -> Void) async throws -> (json: Data, blob: Data)
+    /// A handler whose answer also comes in pieces as it is made: each `partial` call sends one to the app
+    /// ahead of the answer itself.
+    typealias StreamingHandler = @Sendable (
+        _ json: Data, _ blob: Data, _ progress: @Sendable (Double) -> Void, _ partial: @Sendable (Data) -> Void
+    ) async throws -> (json: Data, blob: Data)
+
+    /// The priority the app's own work on the main actor has: in the app these models ran at it, and at the
+    /// next one down the voice's first sentence after a load took 0.7 s longer.
+    static let interactive = TaskPriority(rawValue: 33)
 
     /// The arguments after the executable's name when it was started as a helper: the flag, then the role.
     static var arguments: [String] { Array(CommandLine.arguments.dropFirst()) }
@@ -120,7 +130,14 @@ public enum HelperWorker {
     /// The helper's whole life: answer requests from standard input on standard output, and exit when the
     /// app closes its end. An error is sent back as a `failed` reply, not a crash, so the app can tell a
     /// refused request from a dead helper.
-    static func serve(_ handlers: [String: Handler]) -> Never {
+    static func serve(_ handlers: [String: Handler], priority: TaskPriority = HelperWorker.interactive) -> Never {
+        serve(streaming: handlers.mapValues { handler -> StreamingHandler in
+            { json, blob, progress, _ in try await handler(json, blob, progress) }
+        }, priority: priority)
+    }
+
+    /// `serve`, for handlers that may stream their answers. Each request runs at `priority`.
+    static func serve(streaming handlers: [String: StreamingHandler], priority: TaskPriority = HelperWorker.interactive) -> Never {
         // Keep the reply pipe to ourselves: anything a library prints goes to the error stream instead.
         let out = FileHandle(fileDescriptor: dup(STDOUT_FILENO), closeOnDealloc: true)
         dup2(STDERR_FILENO, STDOUT_FILENO)
@@ -163,15 +180,15 @@ public enum HelperWorker {
                     }
                     let fault = HelperFault(state.fault, op: frame.op)
                     let id = frame.id
-                    // The priority the app's own work on the main actor has: in the app these models ran at it,
-                    // and at the next one down the voice's first sentence after a load took 0.7 s longer.
-                    let task = Task(priority: TaskPriority(rawValue: 33)) {
+                    let task = Task(priority: priority) {
                         defer { state.remove(id) }
                         do {
                             fault.applyAtStart()
-                            let answer = try await handler(frame.json, frame.blob) { fraction in
+                            let answer = try await handler(frame.json, frame.blob, { fraction in
                                 send(HelperFrame(kind: .progress, id: id, json: Data(String(fraction).utf8)))
-                            }
+                            }, { piece in
+                                send(HelperFrame(kind: .partial, id: id, json: piece))
+                            })
                             try Task.checkCancellation()
                             send(HelperFrame(kind: .reply, id: id, json: answer.json, blob: answer.blob))
                         } catch is CancellationError {
@@ -234,6 +251,8 @@ public final class ModelHelper: @unchecked Sendable {
 
     /// What the helper is started with after the executable: its flag and, if it has one, its role.
     private let arguments: [String]
+    /// The priority macOS gives the helper's process.
+    private let qualityOfService: QualityOfService
     /// What runs in it, for messages ("reading voice") and for the log ("reading voice helper").
     let what: String
 
@@ -241,8 +260,11 @@ public final class ModelHelper: @unchecked Sendable {
     private struct Pending {
         var continuation: CheckedContinuation<HelperFrame, Error>
         var progress: (@Sendable (Double) -> Void)?
+        var partial: (@Sendable (Data) -> Void)?
         var silence: Double
         var watchdog: DispatchWorkItem
+        /// Whether its answer counts as the helper working, for the restart limit.
+        var succeeds: Bool
     }
 
     /// Guards everything below; only ever held for a moment.
@@ -271,9 +293,10 @@ public final class ModelHelper: @unchecked Sendable {
     /// Seconds a helper gets to exit by itself after its input closes, before it is killed.
     static let shutdownGrace: Double = 2
 
-    public init(arguments: [String], what: String) {
+    public init(arguments: [String], what: String, qualityOfService: QualityOfService = .userInteractive) {
         self.arguments = arguments
         self.what = what
+        self.qualityOfService = qualityOfService
         Self.registry.withLock { Self.known.append(Weak(helper: self)) }
     }
 
@@ -307,45 +330,72 @@ public final class ModelHelper: @unchecked Sendable {
     /// false). `silence` is how long the helper may go without a word on this request before it is ended.
     /// When the calling task is cancelled the helper is told to stop the request, and is ended if it does not.
     /// Sound goes as `samples`: it is written to the pipe from the array itself, so a long recording is
-    /// not held two or three times over while it is sent.
+    /// not held two or three times over while it is sent. `partial` gets each piece of a streamed answer,
+    /// in order, before the call returns; each piece, like progress, starts the silence again. With
+    /// `succeeds` false the answer does not count as the helper working (see `succeeded()`); with `cancels`
+    /// false a cancelled caller still waits for the answer, and the helper is not told.
     func call(
         _ op: String, json: Data = Data(), samples: [Float] = [], silence: Double, starting: Bool = true,
-        progress: (@Sendable (Double) -> Void)? = nil
+        progress: (@Sendable (Double) -> Void)? = nil, partial: (@Sendable (Data) -> Void)? = nil, succeeds: Bool = true,
+        cancels: Bool = true
     ) async throws -> HelperFrame {
         if starting { _ = try await ensureRunning() }
         let id = lock.withLock { () -> UInt32 in
             nextID &+= 1
             return nextID
         }
+        let request = Request(id: id, op: op, json: json, silence: silence, progress: progress, partial: partial, succeeds: succeeds)
+        // A request that must finish once begun (a model load) is not cancelled with its caller.
+        guard cancels else { return try await send(request, samples: samples) }
         return try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<HelperFrame, Error>) in
-                let watchdog = self.watchdog(for: id, silence: silence)
-                let handle = lock.withLock { () -> FileHandle? in
-                    guard let toHelper, process?.isRunning == true else { return nil }
-                    pending[id] = Pending(continuation: continuation, progress: progress, silence: silence, watchdog: watchdog)
-                    return toHelper
-                }
-                guard let handle else {
-                    continuation.resume(throwing: HelperError.stopped(what))
-                    return
-                }
-                DispatchQueue.global().asyncAfter(deadline: .now() + silence, execute: watchdog)
-                do {
-                    let start = HelperFrame(kind: .request, id: id, op: op, json: json).start(blobCount: samples.count * MemoryLayout<Float>.size)
-                    try writing.withLock {
-                        try handle.write(contentsOf: start)
-                        try samples.withUnsafeBytes { raw in
-                            guard let base = raw.baseAddress, raw.count > 0 else { return }
-                            // The array outlives the write, so the data can point at it without owning it.
-                            try handle.write(contentsOf: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: base), count: raw.count, deallocator: .none))
-                        }
-                    }
-                } catch {
-                    // The helper has just died: the reading thread will see the pipe close and fail this request.
-                }
-            }
+            try await send(request, samples: samples)
         } onCancel: {
             self.cancel(id)
+        }
+    }
+
+    /// What `call` hands to `send`.
+    private struct Request: Sendable {
+        var id: UInt32
+        var op: String
+        var json: Data
+        var silence: Double
+        var progress: (@Sendable (Double) -> Void)?
+        var partial: (@Sendable (Data) -> Void)?
+        var succeeds: Bool
+    }
+
+    /// Writes one request to the helper and waits for its answer.
+    private func send(_ request: Request, samples: [Float]) async throws -> HelperFrame {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<HelperFrame, Error>) in
+            let id = request.id
+            let watchdog = self.watchdog(for: id, silence: request.silence)
+            let handle = lock.withLock { () -> FileHandle? in
+                guard let toHelper, process?.isRunning == true else { return nil }
+                pending[id] = Pending(
+                    continuation: continuation, progress: request.progress, partial: request.partial, silence: request.silence,
+                    watchdog: watchdog, succeeds: request.succeeds)
+                return toHelper
+            }
+            guard let handle else {
+                continuation.resume(throwing: HelperError.stopped(what))
+                return
+            }
+            DispatchQueue.global().asyncAfter(deadline: .now() + request.silence, execute: watchdog)
+            do {
+                let start = HelperFrame(kind: .request, id: id, op: request.op, json: request.json)
+                    .start(blobCount: samples.count * MemoryLayout<Float>.size)
+                try writing.withLock {
+                    try handle.write(contentsOf: start)
+                    try samples.withUnsafeBytes { raw in
+                        guard let base = raw.baseAddress, raw.count > 0 else { return }
+                        // The array outlives the write, so the data can point at it without owning it.
+                        try handle.write(contentsOf: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: base), count: raw.count, deallocator: .none))
+                    }
+                }
+            } catch {
+                // The helper has just died: the reading thread will see the pipe close and fail this request.
+            }
         }
     }
 
@@ -390,27 +440,37 @@ public final class ModelHelper: @unchecked Sendable {
         }
     }
 
+    /// Counts as the helper working, for the restart limit. Every answer does unless its call says otherwise;
+    /// a caller that only knows the helper works after several calls (a load, then a run) says so here.
+    func succeeded() { lock.withLock { restarts.succeeded() } }
+
     /// One reply from the helper, handed to whoever is waiting for it.
     private func received(_ frame: HelperFrame) {
-        if frame.kind == .progress {
-            let (progress, silence, old, fresh) = lock.withLock { () -> ((@Sendable (Double) -> Void)?, Double, DispatchWorkItem?, DispatchWorkItem?) in
-                guard var entry = pending[frame.id] else { return (nil, 0, nil, nil) }
+        if frame.kind == .progress || frame.kind == .partial {
+            let found = lock.withLock { () -> Pending? in
+                guard var entry = pending[frame.id] else { return nil }
                 // Word from the helper: the silence starts again.
-                let old = entry.watchdog
+                entry.watchdog.cancel()
                 entry.watchdog = watchdog(for: frame.id, silence: entry.silence)
                 pending[frame.id] = entry
-                return (entry.progress, entry.silence, old, entry.watchdog)
+                return entry
             }
-            old?.cancel()
-            if let fresh { DispatchQueue.global().asyncAfter(deadline: .now() + silence, execute: fresh) }
-            progress?(Double(String(decoding: frame.json, as: UTF8.self)) ?? 0)
+            guard let found else { return }
+            DispatchQueue.global().asyncAfter(deadline: .now() + found.silence, execute: found.watchdog)
+            // Called here, on the thread that reads the pipe, so the pieces arrive in order and all of them
+            // before the answer.
+            if frame.kind == .partial {
+                found.partial?(frame.json)
+            } else {
+                found.progress?(Double(String(decoding: frame.json, as: UTF8.self)) ?? 0)
+            }
             return
         }
         guard let entry = lock.withLock({ pending.removeValue(forKey: frame.id) }) else { return }
         entry.watchdog.cancel()
         switch frame.kind {
         case .reply:
-            lock.withLock { restarts.succeeded() }
+            if entry.succeeds { succeeded() }
             entry.continuation.resume(returning: frame)
         case .cancelled: entry.continuation.resume(throwing: CancellationError())
         default: entry.continuation.resume(throwing: HelperError.refused(String(decoding: frame.json, as: UTF8.self)))
@@ -455,7 +515,7 @@ public final class ModelHelper: @unchecked Sendable {
         process.executableURL = executable
         process.arguments = arguments
         // The user is waiting on what it makes: it gets the priority the app's own work has.
-        process.qualityOfService = .userInteractive
+        process.qualityOfService = qualityOfService
         let input = Pipe(), output = Pipe()
         process.standardInput = input
         process.standardOutput = output

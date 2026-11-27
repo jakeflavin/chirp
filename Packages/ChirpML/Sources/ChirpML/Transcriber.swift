@@ -116,7 +116,7 @@ public actor Transcriber {
     public static let sampleRate = 16_000
     /// The pinned model file for Parakeet V2: file, size, and checksum.
     static let modelFile = "parakeet-tdt-0.6b-v2-Q8_0.gguf"
-    static let modelBytes: Int64 = 729_574_912
+    public static let modelBytes: Int64 = 729_574_912
     static let modelSHA256 = "f0d0e99cebb6d3b83f1f7069b82b5d3c2e39a54545b0da039cb4bafd9c4e5caa"
     static let modelSource = URL(
         string: "https://huggingface.co/handy-computer/parakeet-tdt-0.6b-v2-gguf/resolve/07cee0616125a08ef619729bb47f40ef747e4bc4/parakeet-tdt-0.6b-v2-Q8_0.gguf")!

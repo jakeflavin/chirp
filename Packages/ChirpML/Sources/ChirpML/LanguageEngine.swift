@@ -1,3 +1,4 @@
+import ChirpCore
 import Foundation
 import HuggingFace
 import MLX
@@ -17,7 +18,8 @@ actor LanguageEngine {
     /// The prompts' shared start, read once and reused by the batched runs (`BatchedGeneration.swift`).
     let promptPrefix = PromptPrefix()
 
-    /// Downloads the model if needed and loads it. `progress` reports 0…1. An absolute path is a model folder on this Mac
+    /// Downloads the model if needed and loads it. `progress` reports 0…1. `modelID` is a hub repository, pinned to a commit
+    /// as "repo@revision" (`HubReference`); an absolute path is a model folder on this Mac
     /// (testing only: a converted model that is not on the hub). `adapterID` is a LoRA adapter on the hub in PEFT's format
     /// ("repo@revision"), downloaded the same way and fused into the model by mlx-swift-lm (`LoRAContainer.fuse`, which for a
     /// quantized layer dequantizes, adds the update and quantizes again, as mlx-lm's `fuse` does): the summary
@@ -29,20 +31,26 @@ actor LanguageEngine {
         let loaded = try await LLMModelFactory.shared.loadContainer(
             from: downloader,
             using: #huggingFaceTokenizerLoader(),
-            configuration: modelID.hasPrefix("/") ? .init(directory: URL(fileURLWithPath: modelID)) : .init(id: modelID)
+            configuration: modelID.hasPrefix("/") ? .init(directory: URL(fileURLWithPath: modelID)) : Self.configuration(modelID)
         ) { p in
             progress?(p.fractionCompleted * (adapterID == nil ? 1 : 0.99))
         }
         if let adapterID {
-            let parts = adapterID.split(separator: "@", maxSplits: 1).map(String.init)
+            let adapter = HubReference.split(adapterID)
             let folder = try await downloader.download(
-                id: parts[0], revision: parts.count > 1 ? parts[1] : nil, matching: ["adapter_config.json", "adapter_model.safetensors"],
+                id: adapter.repo, revision: adapter.revision, matching: ["adapter_config.json", "adapter_model.safetensors"],
                 useLatest: false, progressHandler: { _ in })
             try await loaded.perform { (context: ModelContext) in
                 try context.model.fuse(with: try Self.peftAdapter(in: folder, for: context.model))
             }
         }
         container = loaded
+    }
+
+    /// The hub model a "repo@revision" names, at that revision (the hub's latest when none is named).
+    static func configuration(_ reference: String) -> MLXLMCommon.ModelConfiguration {
+        let hub = HubReference.split(reference)
+        return hub.revision.map { MLXLMCommon.ModelConfiguration(id: hub.repo, revision: $0) } ?? MLXLMCommon.ModelConfiguration(id: hub.repo)
     }
 
     /// A PEFT LoRA adapter (`adapter_config.json`, `adapter_model.safetensors`) as mlx-swift-lm's `LoRAContainer`: the same

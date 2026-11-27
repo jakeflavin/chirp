@@ -427,16 +427,6 @@ import Testing
         #expect(!names.contains("Spring") && !names.contains("Budget") && !names.contains("Friday") && !names.contains("Agenda"))
         #expect(!names.contains("The") && !names.contains("We"))
     }
-
-    @Test func aQuestionCanLookInDocumentsAndScreens() {
-        var context = RecordingContext(eventTitle: "Launch review", attendees: ["Priya Shah"])
-        context.screens = [.init(at: 65, app: "Keynote", text: "Budget ceiling:\n48,000 dollars")]
-        context.attachments = [.init(name: "agenda.txt", text: "Confirm the vendor")]
-        let passages = context.passages()
-        #expect(passages.map(\.title) == ["Calendar", "Document: agenda.txt", "On screen at 1:05 in Keynote"])
-        #expect(passages[2].text == "Budget ceiling: 48,000 dollars")
-        #expect(RecordingContext().passages().isEmpty)
-    }
 }
 
 @Suite struct NoteSourceTests {

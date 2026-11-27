@@ -33,9 +33,12 @@ final class GrammarChecker: @unchecked Sendable {
         set { UserDefaults.standard.set(newValue, forKey: "deepChecks") }
     }
     /// Whether it also runs on text fields in other apps. Off by default on Macs with little memory,
-    /// because it keeps the language model loaded while you type.
+    /// because it keeps the language model loaded while you type (`MacMemory`).
     static var deepInOtherApps: Bool {
-        get { UserDefaults.standard.object(forKey: "deepChecksEverywhere") as? Bool ?? (ProcessInfo.processInfo.physicalMemory >= 15 * 1_073_741_824) }
+        get {
+            UserDefaults.standard.object(forKey: "deepChecksEverywhere") as? Bool
+                ?? MacMemory.deepChecksEverywhereByDefault(memoryBytes: ProcessInfo.processInfo.physicalMemory)
+        }
         set { UserDefaults.standard.set(newValue, forKey: "deepChecksEverywhere") }
     }
 
@@ -191,15 +194,15 @@ final class WritingAssistant {
         self.models = models
         checker = GrammarChecker(engine: app.engine)
         checker.deepRunner = { [weak app, weak models] paragraph in
-            await MainActor.run { () -> Task<String?, Never> in
-                Task { @MainActor in
-                    guard let app, let models, (try? await models.ensure(.language)) != nil,
-                        let prompts = try? Prompts(engine: app.engine)
-                    else { return nil }
-                    return try? await models.language.run(
-                        instructions: prompts.instructions(for: .fix), text: paragraph,
-                        maxTokens: paragraph.count / 2 + 120, temperature: 0)
-                }
+            // Read once here: the weak references are not touched again from the task below.
+            guard let app, let models else { return nil }
+            // A task of its own, not cancelled with the check that asked: a paragraph read to the end is
+            // remembered, so it is worth finishing even when the text changed meanwhile.
+            return await Task { @MainActor in
+                guard (try? await models.ensure(.language)) != nil, let prompts = try? Prompts(engine: app.engine) else { return nil }
+                return try? await models.language.run(
+                    instructions: prompts.instructions(for: .fix), text: paragraph,
+                    maxTokens: paragraph.count / 2 + 120, temperature: 0)
             }.value
         }
     }

@@ -88,7 +88,7 @@ meetings and offer to record; Screen Recording only when the camera button is us
 language model (meeting notes only; voice notes use no language model).
 
 **Debug hooks.** `meeting-start`, `meeting-stop`, `meeting-note`, `meeting-capture`, `meeting-notes-stop`,
-`meeting-redo`, `meeting-offer`, `meeting-offer-accept`, `meeting-ask`, `meeting-attach`,
+`meeting-redo`, `meeting-offer`, `meeting-offer-accept`, `meeting-attach`,
 `meeting-detach`, `meeting-import`, `calendar-fake`, `call-name`, `transcribe-link`, `link-ask`,
 `link-kind`, `link-choose`, `link-cancel`, `link-tool`, `job-hold`, `job-cancel`, `retranscribe-kept`,
 `drop`, `drop-do`, `file-drag`. Environment: `CHIRP_RECORD_TEST`, `CHIRP_LINKTOOL_BASE`,
@@ -232,7 +232,9 @@ open the same way:
 and adds matches by meaning when the search model is ready (`SemanticSearch` in
 `Packages/ChirpCore/.../Store/SemanticSearch.swift`). Search by meaning is off until the user presses
 "Turn on search by meaning"; that downloads the search model and embeds every item's passages into the
-`chunk` table. New items are embedded only when the user presses "Search N new items by meaning".
+`chunk` table. New items are embedded only when the user presses "Search N new items by meaning". With
+every feature that saves items switched off (Writing checks alone), search by meaning does not run and
+the search model is unloaded (`FeatureModel.search`).
 
 **Models.** bge-small in the language helper (search only).
 
@@ -272,8 +274,9 @@ Debug hooks: `settings`, `settings-tab`, `features`, `language-size`, `danger`, 
 `Onboarding/OnboardingView.swift`, `Onboarding/OnboardingSteps.swift`, shown by `FirstRunWindow` in its
 own small window on first run. Steps: Features, Dictation (try it), Shortcuts, Permissions, Models,
 Language model, Writing, Notes, Recording, Reading; steps for switched-off features are left out. Each
-step holds the real control, so what is set there is set for good. Opening it starts the speech model
-download. Leaving it adds one short sample document to Home and opens the Library. Reopened from
+step holds the real control, so what is set there is set for good. Nothing downloads until the user
+starts it: the Dictation step shows the speech model's size with a button to download it, and the Models
+step has a Download button per model and "Download all". Leaving it adds one short sample document to Home and opens the Library. Reopened from
 Settings › General, it shows current values and resets nothing. Debug hooks: `onboarding`,
 `onboarding-step`, `onboarding-do`; launch flag `--skip-onboarding`.
 

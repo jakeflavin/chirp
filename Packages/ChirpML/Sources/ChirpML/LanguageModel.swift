@@ -32,17 +32,6 @@ public enum LanguageModelError: LocalizedError, Equatable {
 /// This is the app's side. The model itself is loaded and run in a helper process (`LanguageWorker`), so
 /// a crash in it cannot take the app down, and unloading ends that process and returns all its memory.
 public actor LanguageModel {
-    /// Small enough for an 8 GB Mac.
-    public static let lightModelID = "mlx-community/Qwen3.5-2B-MLX-4bit"
-    /// Better quality for Macs with 16 GB or more.
-    public static let qualityModelID = "mlx-community/Qwen3.5-4B-MLX-4bit"
-
-    /// The model to use on this Mac when the user has not chosen one: the larger one only where there
-    /// is memory to spare for it.
-    public static var recommendedModelID: String {
-        ProcessInfo.processInfo.physicalMemory >= 15 * 1_073_741_824 ? qualityModelID : lightModelID
-    }
-
     /// The helper process and the pipes to it, shared with the search model.
     private let supervisor = LanguageSupervisor.shared
     /// The helper the model was loaded in, by its number. A different helper running means the model has
@@ -74,12 +63,13 @@ public actor LanguageModel {
     /// TESTING only (debug links): `kill:<n>`, `hang:<n>` or `fail` for the runs that follow; nil for none.
     public func setFault(_ fault: String?) { supervisor.testFault = fault }
 
-    /// Downloads the model if needed and loads it. `progress` reports 0…1.
+    /// Downloads the model if needed and loads it. `progress` reports 0…1. Which model suits this Mac is
+    /// decided by the app (`LanguageModelSize` in ChirpCore), which names it here.
     /// Asking for a different model than the one loaded frees that one first.
     /// A caller that arrives while the same model is loading waits for that load; one that wants a
     /// different model waits for it to finish and then loads its own.
     /// `adapterID` is a LoRA adapter on the hub fused into the model as it loads (the summary model).
-    public func load(modelID: String = LanguageModel.recommendedModelID, adapterID: String? = nil, progress: (@Sendable (Double) -> Void)? = nil)
+    public func load(modelID: String, adapterID: String? = nil, progress: (@Sendable (Double) -> Void)? = nil)
         async throws
     {
         let key = Self.key(modelID, adapterID)
