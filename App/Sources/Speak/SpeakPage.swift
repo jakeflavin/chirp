@@ -138,7 +138,7 @@ struct DictationEditor: View {
                 .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.ink.opacity(0.15)))
                 .accessibilityIdentifier("dictation.editor")
             Text("If you fix a word Chirp misheard, it is added to your dictionary so it is right next time. You can see and remove learned words in the Library, under Dictionary.")
-                .font(.caption).foregroundStyle(Color.quiet).fixedSize(horizontal: false, vertical: true)
+                .font(.rowMeta).foregroundStyle(Color.quiet).fixedSize(horizontal: false, vertical: true)
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction)

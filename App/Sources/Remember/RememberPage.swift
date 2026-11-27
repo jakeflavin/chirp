@@ -130,7 +130,7 @@ struct DictionaryEditor: View {
                     prompt: Text("How the voice should say it"))
             }
             Text("“Heard as” lists what speech recognition tends to write instead. Separate with commas.")
-                .font(.caption).foregroundStyle(Color.quiet)
+                .font(.rowMeta).foregroundStyle(Color.quiet)
             HStack {
                 Button("Delete", role: .destructive) {
                     delete()
@@ -350,7 +350,7 @@ struct ProfileView: View {
                 }
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Notes on your style")
-                    Text("For example: short sentences, no exclamation marks").font(.caption).foregroundStyle(Color.quiet)
+                    Text("For example: short sentences, no exclamation marks").font(.rowMeta).foregroundStyle(Color.quiet)
                     TextEditor(text: $profile.styleNotes)
                         // Chirp never offers Apple's Writing Tools: its own models do that work.
                         .writingToolsBehavior(.disabled)

@@ -772,7 +772,7 @@ private struct ScreenThumbnail: View {
             }
             .frame(width: 150, height: 94).clipShape(RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.ink.opacity(0.1)))
-            Text("\(screen.at.clock) · \(screen.app)").font(.caption).foregroundStyle(Color.quiet).lineLimit(1).frame(width: 150, alignment: .leading)
+            Text("\(screen.at.clock) · \(screen.app)").font(.rowMeta).foregroundStyle(Color.quiet).lineLimit(1).frame(width: 150, alignment: .leading)
         }
         .contentShape(Rectangle())
         .onTapGesture { if let url { NSWorkspace.shared.open(url) } }

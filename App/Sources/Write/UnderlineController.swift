@@ -2058,7 +2058,7 @@ struct WriteOptions: View {
                 }
             }
             Text("Underlines work in apps that report where their text is on screen, such as Notes, Mail and TextEdit. Click an underlined word for its fix, or click Fix on Chirp’s bar to see every suggestion. The sentence shortcut applies all the fixes in the sentence the cursor is in. Turn underlines on or off per app in the Library, under Writing style › By app.")
-                .font(.caption).foregroundStyle(Color.quiet)
+                .font(.rowMeta).foregroundStyle(Color.quiet)
         }
         .formStyle(.grouped)
         .frame(minWidth: 480, minHeight: 500)

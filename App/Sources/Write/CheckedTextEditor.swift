@@ -287,7 +287,7 @@ struct IssueCard: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Circle().fill(Color(nsColor: issue.category.color)).frame(width: 8, height: 8)
-                Text(issue.category.title).font(.caption.weight(.semibold)).foregroundStyle(Color.quiet)
+                Text(issue.category.title).font(.rowMeta.weight(.semibold)).foregroundStyle(Color.quiet)
             }
             Text(issue.message).font(.callout).fixedSize(horizontal: false, vertical: true)
             if !issue.suggestions.isEmpty {
@@ -306,7 +306,7 @@ struct IssueCard: View {
                 }
             }
             .buttonStyle(.borderless)
-            .font(.caption)
+            .font(.rowMeta)
         }
         .padding(14)
         .frame(width: 300, alignment: .leading)
