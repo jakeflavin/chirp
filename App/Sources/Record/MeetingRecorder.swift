@@ -1697,7 +1697,7 @@ final class MeetingRecorder {
             let script = MeetingText.script(segments)
             let parts = MeetingText.transcriptParts(script)
             // Who took on what comes from who said it, by rule (below): the model is never asked.
-            let commitments = solo ? [] : MeetingText.commitments(in: segments)
+            let commitments = MeetingText.commitments(in: segments)
             // In a long recording the decisions are worked out on their own, part by part (below), so they are not asked for here either.
             let decisionsApart = !solo && parts.count > 1 && sections.contains(where: Prompts.isDecisionSection)
             let asked = sections.filter { !(decisionsApart && Prompts.isDecisionSection($0)) }
@@ -1735,7 +1735,7 @@ final class MeetingRecorder {
                 // (Parts are not overlapped: measured on two meetings, a part that began with the
                 // end of the one before brought in more wrong decisions than it saved.)
                 var noted: [[MeetingText.DecisionNote]] = []
-                for (i, part) in parts.enumerated() {
+                for part in parts {
                     var found: [MeetingText.DecisionNote] = []
                     for request in [prompts.decisionNotesRequest(part: part), prompts.agreementRequest(part: part)] {
                         let run = try await notesStep(prompts.decisionSystem(), request, maxTokens: 300, tally: &tally)

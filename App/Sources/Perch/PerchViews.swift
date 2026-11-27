@@ -682,7 +682,7 @@ private struct PerchBubble: View {
     private var words: Text {
         let said = Text(saying.text).foregroundStyle(saying.lead == nil ? GlassFill.ink : GlassFill.quiet)
         guard let lead = saying.lead else { return said.font(.system(size: PerchStyle.bubbleFont)) }
-        return (Text(lead + "  ").fontWeight(.semibold) + said).font(.system(size: PerchStyle.bubbleFont))
+        return Text("\(Text(lead + "  ").fontWeight(.semibold))\(said)").font(.system(size: PerchStyle.bubbleFont))
     }
 
     /// The bubble's buttons side by side, the main one first and amber.

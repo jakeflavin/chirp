@@ -706,7 +706,7 @@ final class PerchController {
     }
 
     /// How long a line stays on the bar by itself. It also goes on a click, on Escape and with its ×.
-    static let noticeSeconds = 3.0
+    nonisolated static let noticeSeconds = 3.0
 
     /// Shows one line on the bar, with an optional button. It never holds the bar: it goes after three
     /// seconds at most, or sooner on a click, Escape or its ×. Something that went wrong (`error`) stays

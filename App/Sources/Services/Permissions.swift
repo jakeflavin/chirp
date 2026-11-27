@@ -2,6 +2,7 @@ import AVFoundation
 import AppKit
 import ApplicationServices
 import Observation
+import Combine
 import SwiftUI
 
 /// The macOS permissions Chirp uses, and whether each is granted.

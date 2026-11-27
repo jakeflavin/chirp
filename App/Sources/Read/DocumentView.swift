@@ -605,9 +605,9 @@ private struct ReadingPage: View {
         for piece in pieces {
             if piece.asked {
                 asking = true
-                text = text + Text(piece.text).customAttribute(SayItAsAttribute())
+                text = Text("\(text)\(Text(piece.text).customAttribute(SayItAsAttribute()))")
             } else {
-                text = text + (piece.sentence == stop && stop != nil ? Text(piece.text).customAttribute(LeftOffAttribute()) : Text(piece.text))
+                text = Text("\(text)\(piece.sentence == stop && stop != nil ? Text(piece.text).customAttribute(LeftOffAttribute()) : Text(piece.text))")
             }
         }
         return text
@@ -1056,6 +1056,12 @@ private struct TranscriptDocument: View {
 
 /// An empty page: the bird, one line, and the one button that fills the page. The
 /// bird hops in once when the page opens, then sits. It is never on a page that has content.
+extension EmptyPage where Action == EmptyView {
+    init(_ title: String, line: String, look: Look = .ahead) {
+        self.init(title, line: line, look: look) { EmptyView() }
+    }
+}
+
 struct EmptyPage<Action: View>: View {
     /// What the bird does once it has landed.
     enum Look {
@@ -1074,7 +1080,7 @@ struct EmptyPage<Action: View>: View {
     @State private var landed = false
     @State private var gaze = CGPoint.zero
 
-    init(_ title: String, line: String, look: Look = .ahead, @ViewBuilder action: @escaping () -> Action = { EmptyView() }) {
+    init(_ title: String, line: String, look: Look = .ahead, @ViewBuilder action: @escaping () -> Action) {
         self.title = title
         self.line = line
         self.look = look

@@ -121,7 +121,7 @@ extension PerchController {
     /// From the screen's edge to the perch.
     static let margin: CGFloat = 12
     /// How much of a tucked perch still shows.
-    static let sliver: CGFloat = 12
+    nonisolated static let sliver: CGFloat = 12
     /// A dragged perch settles into a landing spot from this far away.
     static let snapDistance: CGFloat = 120
 

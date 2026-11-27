@@ -35,7 +35,8 @@ actor EmbedEngine {
     /// A unit-length vector for each text, in the same order. Text past about 510 tokens is not read.
     func embed(_ texts: [String]) async throws -> [[Float]] {
         guard let container else { throw EmbedderError.notLoaded }
-        return await container.perform { model, tokenizer, pooling in
+        return await container.perform { context in
+            let (model, tokenizer, pooling) = (context.model, context.tokenizer, context.pooling)
             var out: [[Float]] = []
             for text in texts {
                 // The model reads 512 tokens at most. When text is cut to fit, the closing marker the

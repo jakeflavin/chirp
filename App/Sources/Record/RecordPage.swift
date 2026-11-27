@@ -187,9 +187,11 @@ struct TranscriptTimeline: View {
     private func said(_ line: TranscriptSegment, lit: Bool) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text(line.start.clock).font(.system(size: 12)).monospacedDigit().foregroundStyle(Color.quiet).frame(width: 40, alignment: .leading)
-            (Text(names ? (line.speaker == "Me" ? "You" : line.speaker) + "  " : "").fontWeight(.semibold)
-                .foregroundStyle(line.speaker == "Me" ? Color.ink : Color.grammar)
-                + Text(line.text).foregroundStyle(Color.ink.opacity(0.86)))
+            Text("""
+                \(Text(names ? (line.speaker == "Me" ? "You" : line.speaker) + "  " : "").fontWeight(.semibold)
+                .foregroundStyle(line.speaker == "Me" ? Color.ink : Color.grammar))\
+                \(Text(line.text).foregroundStyle(Color.ink.opacity(0.86)))
+                """)
                 .font(.system(size: 13)).lineSpacing(3).textSelection(.enabled)
                 .padding(.horizontal, lit ? 3 : 0)
                 .background(lit ? Color.amber.opacity(0.24) : .clear, in: RoundedRectangle(cornerRadius: 4))

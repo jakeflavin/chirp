@@ -167,7 +167,7 @@ final class ModelCenter {
     /// Qwen3-0.6B (8-bit) with the TLDR LoRA, the 2B's replacement for summaries on Macs that use the 2B: as
     /// many wrong statements, in two-thirds the time and with less memory. The model and the adapter are pinned
     /// to the revisions that were measured.
-    static let tldrSummaryModel = SummaryModel(
+    nonisolated static let tldrSummaryModel = SummaryModel(
         id: "mlx-community/Qwen3-0.6B-8bit", revision: "11de96878523501bcaa86104e3c186de07ff9068", adapter: "phh/Qwen3-0.6B-TLDR-Lora@0f39534202828516c2645f1aeb8c5e9e9a0f6801",
         tldrPrompt: true, name: "Qwen3 0.6B", downloadGB: 0.7)
 

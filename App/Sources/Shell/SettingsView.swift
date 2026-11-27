@@ -699,7 +699,7 @@ struct ModelsSettings: View {
             let size = await Task.detached { () -> String in
                 var bytes: Int64 = 0
                 if let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.fileSizeKey]) {
-                    for case let url as URL in files { bytes += Int64((try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0) }
+                    while let url = files.nextObject() as? URL { bytes += Int64((try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0) }
                 }
                 return ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
             }.value

@@ -103,7 +103,8 @@ public enum HelperWorker {
     /// A handler whose answer also comes in pieces as it is made: each `partial` call sends one to the app
     /// ahead of the answer itself.
     typealias StreamingHandler = @Sendable (
-        _ json: Data, _ blob: Data, _ progress: @Sendable (Double) -> Void, _ partial: @Sendable (Data) -> Void
+        _ json: Data, _ blob: Data, _ progress: @escaping @Sendable (Double) -> Void,
+        _ partial: @escaping @Sendable (Data) -> Void
     ) async throws -> (json: Data, blob: Data)
 
     /// The priority the app's own work on the main actor has: in the app these models ran at it, and at the

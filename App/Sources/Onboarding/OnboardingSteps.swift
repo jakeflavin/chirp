@@ -2,6 +2,7 @@ import AppKit
 import ChirpCore
 import ChirpML
 import KeyboardShortcuts
+import Combine
 import SwiftUI
 
 /// Onboarding: a tour and the setup in one. Each step explains

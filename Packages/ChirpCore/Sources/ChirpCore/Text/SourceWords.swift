@@ -142,7 +142,7 @@ public enum SourceCheck {
         if names(in: point).contains(where: { !hasName($0, in: lowerSource) }) || firstWordName(point, closest: sentences[first], source: source) != nil { problems.append(.name) }
         // Polarity words: each in a sentence about the same thing.
         for w in pPolar {
-            if bound(around(w.range)) { k in info[k].polar.contains { $0.family == w.family } }.isEmpty { problems.append(.polarity); break }
+            if bound(around(w.range), { k in info[k].polar.contains { $0.family == w.family } }).isEmpty { problems.append(.polarity); break }
         }
         // A "not" says something about the word after it: that word follows a "not" in the source too ("not only cooler
         // days" is not "not cooler nights").
