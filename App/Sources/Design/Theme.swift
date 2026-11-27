@@ -407,8 +407,8 @@ private struct PlaybackKeys: ViewModifier {
     @State private var box = Box()
 
     /// What the monitor reads when a key comes in. Kept current on every draw, so the monitor never
-    /// acts on the item the bar showed when it appeared.
-    @MainActor final class Box {
+    /// acts on the item the bar showed when it appeared. Only touched on the main thread.
+    final class Box {
         var keys: Set<PlaybackKey> = []
         var press: (PlaybackKey) -> Void = { _ in }
         /// A view in the bar's window, to tell its window's keys from another window's.
@@ -420,7 +420,7 @@ private struct PlaybackKeys: ViewModifier {
         box.keys = keys
         box.press = press
         return content
-            .background(Anchor(box: box).frame(width: 0, height: 0).accessibilityHidden(true))
+            .background(WindowAnchor(box: box).frame(width: 0, height: 0).accessibilityHidden(true))
             .onAppear(perform: start)
             .onDisappear(perform: stop)
     }
@@ -449,7 +449,7 @@ private struct PlaybackKeys: ViewModifier {
         box.monitor = nil
     }
 
-    private struct Anchor: NSViewRepresentable {
+    private struct WindowAnchor: NSViewRepresentable {
         let box: Box
         func makeNSView(context: Context) -> NSView {
             let view = NSView()
