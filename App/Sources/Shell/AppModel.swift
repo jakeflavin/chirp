@@ -55,6 +55,11 @@ final class AppModel {
     var libraryVersion = 0
     /// What the Library window is showing. It opens on Home. A page whose features are switched off is
     /// not there to be shown, whoever asks for it: Home is shown in its place.
+    /// A menu bar command for the Library window to carry out (File › New Note, Edit › Find…), with a new
+    /// number each time so the same command chosen twice is seen twice.
+    var menuCommand: (command: MenuCommand, number: Int)?
+    func run(_ command: MenuCommand) { menuCommand = (command, (menuCommand?.number ?? 0) + 1) }
+
     var section: LibrarySection = .home {
         didSet { if section != .home, !section.isShown { section = .home } }
     }
@@ -172,4 +177,9 @@ final class AppModel {
     func report(_ error: Error, doing what: String) {
         banner = "Could not \(what): \(error.localizedDescription)"
     }
+}
+
+/// What the menu bar asks the Library window to do.
+enum MenuCommand: Equatable {
+    case newNote, addFile, addLink, find
 }

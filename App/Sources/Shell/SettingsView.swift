@@ -72,31 +72,29 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 }
 
 /// Settings, a page of the window: the shared header, a row of tabs by feature, and that feature's
-/// settings as grouped rows. `standalone` is the same page in a window of its own, which the menu bar's
-/// "Settings…" opens.
+/// settings as grouped rows. There is no Settings window of its own.
 struct SettingsPage: View {
     @Environment(AppModel.self) private var app
     @Environment(PerchController.self) private var perch
     @Environment(SearchController.self) private var search
-    var standalone = false
 
     /// What is typed in the window's search field while this page is open.
-    private var query: String { standalone ? "" : search.query.trimmingCharacters(in: .whitespaces) }
+    private var query: String { search.query.trimmingCharacters(in: .whitespaces) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             PageHeader(title: "Settings", subtitle: "Changes apply straight away")
-                .padding(.top, standalone ? 12 : 0)
-            HStack(spacing: 6) {
+            // Wraps onto a second line in a narrow window rather than cutting the names short.
+            FlowLayout(spacing: 6) {
                 ForEach(SettingsTab.allCases) { tab in
                     Button {
                         app.settingsTab = tab
-                        if !standalone { search.query = "" }
+                        search.query = ""
                     } label: {
                         ChipLabel(title: tab.title, selected: tab == app.settingsTab && query.isEmpty)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityAddTraits(tab == app.settingsTab ? .isSelected : [])
+                    .accessibilityAddTraits(tab == app.settingsTab && query.isEmpty ? .isSelected : [])
                     .accessibilityIdentifier("settings.tab.\(tab.rawValue)")
                 }
             }
@@ -340,7 +338,7 @@ struct GeneralSettings: View {
                 .accessibilityLabel("Version \(Beta.versionLine)\(Beta.isOn ? ", Beta" : "")")
                 .id("about")
                 DisclosureGroup("Built with") {
-                    Text(AboutSettings.credits).font(.caption).foregroundStyle(Color.quiet).textSelection(.enabled)
+                    Text(AboutSettings.credits).font(.rowMeta).foregroundStyle(Color.quiet).textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -720,12 +718,12 @@ struct LinkToolRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Link tool (yt-dlp)")
                 Text("Gets the sound from video pages · about 35 MB · \(state)")
-                    .font(.caption).foregroundStyle(Color.quiet).fixedSize(horizontal: false, vertical: true)
+                    .font(.rowMeta).foregroundStyle(Color.quiet).fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
             if case .gettingTool(let fraction) = links.phase {
                 ProgressView(value: fraction).frame(width: 90)
-                Text("\(Int(fraction * 100))%").font(.caption).monospacedDigit().frame(width: 34, alignment: .trailing)
+                Text("\(Int(fraction * 100))%").font(.rowMeta).monospacedDigit().frame(width: 34, alignment: .trailing)
             } else if links.toolVersion == nil {
                 Button("Download") { links.downloadOrUpdateTool() }.disabled(links.isBusy)
             } else {
@@ -758,7 +756,7 @@ struct ModelRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(kind.name)
                 Text("\(kind.purpose) · \(kind.approximateSize) · \(Self.word(for: state))")
-                    .font(.caption).foregroundStyle(Self.failed(state) ? Color.spelling : Color.quiet)
+                    .font(.rowMeta).foregroundStyle(Self.failed(state) ? Color.spelling : Color.quiet)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
@@ -767,7 +765,7 @@ struct ModelRow: View {
                 Button("Download") { load() }
             case .downloading(let fraction):
                 ProgressView(value: fraction).frame(width: 90)
-                Text("\(Int(fraction * 100))%").font(.caption).monospacedDigit().frame(width: 34, alignment: .trailing)
+                Text("\(Int(fraction * 100))%").font(.rowMeta).monospacedDigit().frame(width: 34, alignment: .trailing)
             case .onDisk:
                 EmptyView()
             case .loading:

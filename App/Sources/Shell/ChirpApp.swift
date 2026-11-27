@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @MainActor static var app: AppModel?
     @MainActor static var models: ModelCenter?
     @MainActor static var dictation: DictationController?
+    @MainActor static var perch: PerchController?
     /// Opens Settings, which is a page of the Library window. There is no Settings window of its own.
     @MainActor static var openSettings: (() -> Void)?
     /// Opens the main window (set by the window itself, so it also works after the window was closed).
@@ -225,6 +226,7 @@ struct ChirpApp: App {
             app: app, dictation: dictation, recorder: recorder, detector: detector, reader: reader,
             underlines: underlines, selection: selection)
         _perch = State(initialValue: perch)
+        AppDelegate.perch = perch
         // The menu bar item and its popover. It is not a scene: see MenuBarPopover.swift. Its "Settings…"
         // opens the Settings page of the Library window; there is no separate Settings window.
         _menu = State(initialValue: MenuBarModel(
@@ -301,12 +303,48 @@ struct ChirpApp: App {
         .windowToolbarStyle(.unified(showsTitle: false))
         .defaultLaunchBehavior(.suppressed)
         .commands {
-            CommandGroup(replacing: .newItem) {}
+            CommandGroup(replacing: .newItem) {
+                Button("New Note") { Self.inLibrary(.newNote) }
+                    .keyboardShortcut("n", modifiers: .command)
+                    .disabled(!Features.on(.notes))
+                Button("Record a Voice Note") { AppDelegate.perch?.record() }
+                    .disabled(!Features.on(.notes))
+                Divider()
+                Button("Add a File…") { Self.inLibrary(.addFile) }
+                    .keyboardShortcut("o", modifiers: .command)
+                Button("Add a Link…") { Self.inLibrary(.addLink) }
+                    .keyboardShortcut("l", modifiers: .command)
+            }
+            CommandGroup(after: .textEditing) {
+                Button("Find…") { Self.inLibrary(.find) }
+                    .keyboardShortcut("f", modifiers: .command)
+            }
+            CommandGroup(replacing: .sidebar) {
+                // ⌃⌘S, as in Finder, Mail and Notes.
+                Button("Show or Hide Sidebar") { withAnimation(.easeInOut(duration: 0.2)) { AppDelegate.app?.toggleSidebar() } }
+                    .keyboardShortcut("s", modifiers: [.command, .control])
+            }
+            CommandMenu("Go") {
+                ForEach(Array(Self.goSections.enumerated()), id: \.element) { index, section in
+                    let button = Button(section.title) { Self.go(to: section) }
+                    if index < 9 {
+                        button.keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
+                    } else {
+                        button
+                    }
+                }
+            }
             CommandGroup(after: .appInfo) {
                 Button("Check for Updates…") { Updater.shared.checkNow() }
                     .disabled(!Updater.shared.isAvailable)
             }
             CommandGroup(replacing: .help) {
+                Button("Keyboard Shortcuts") {
+                    AppDelegate.app?.settingsTab = .shortcuts
+                    AppDelegate.app?.section = .settings
+                    AppDelegate.showMain()
+                }
+                Divider()
                 Button("Send Feedback…") { Feedback.open() }
             }
             // Settings is a page of this window, so the usual menu item and key open it there.
@@ -314,5 +352,26 @@ struct ChirpApp: App {
                 Button("Settings…") { AppDelegate.showSettings() }.keyboardShortcut(",", modifiers: .command)
             }
         }
+    }
+}
+
+extension ChirpApp {
+    /// The pages the Go menu lists, in the sidebar's order: the ones the switched-on features show.
+    @MainActor static var goSections: [LibrarySection] {
+        ([.home] + (LibrarySection.saved.contains(where: \.isShown) ? [.everything] : []) + LibrarySection.saved
+            + LibrarySection.language + [.settings]).filter(\.isShown)
+    }
+
+    @MainActor static func go(to section: LibrarySection) {
+        if section == .settings { return AppDelegate.showSettings() }
+        AppDelegate.app?.section = section
+        AppDelegate.showMain()
+    }
+
+    /// Brings the Library forward, then asks it to carry out a menu command.
+    @MainActor static func inLibrary(_ command: MenuCommand) {
+        AppDelegate.showMain()
+        // The window may only now be opening; its views see the command once they are there.
+        Task { @MainActor in AppDelegate.app?.run(command) }
     }
 }

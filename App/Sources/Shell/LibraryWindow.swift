@@ -329,16 +329,17 @@ struct LibraryWindow: View {
 
     var body: some View {
         observed
-        .background {
-            // Command-F puts the cursor in the search field.
-            Button("Search") {
+        // The menu bar's File and Edit commands (their keys live there, so every command can be found).
+        .onChange(of: app.menuCommand?.number) {
+            switch app.menuCommand?.command {
+            case .newNote: newNote()
+            case .addFile: pickFile()
+            case .addLink: askingAddress = true
+            case .find:
                 searchExpanded = true
                 searchFocused = true
+            case nil: break
             }
-            .keyboardShortcut("f", modifiers: .command).hidden()
-            // ⌃⌘S shows or hides the sidebar, as in Finder, Mail and Notes.
-            Button("Sidebar") { withAnimation(.easeInOut(duration: 0.2)) { app.toggleSidebar() } }
-                .keyboardShortcut("s", modifiers: [.command, .control]).hidden()
         }
         .onFileDrop(isTargeted: $dropTargeted) { url in add(url) }
         // Edit › Paste on the Documents page keeps the clipboard's text as a document.
@@ -621,7 +622,6 @@ struct LibraryWindow: View {
                         } label: {
                             Label("New Note", image: "chirp.note")
                         }
-                        .keyboardShortcut("n", modifiers: .command)
                         Button {
                             perch.record()
                         } label: {
