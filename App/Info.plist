@@ -68,5 +68,18 @@
 	<string>https://jakeflavin.github.io/chirp/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>$(SPARKLE_PUBLIC_KEY)</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Chirp Library item</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.jakeflavin.chirp.library-item</string>
+		</dict>
+	</array>
 </dict>
 </plist>

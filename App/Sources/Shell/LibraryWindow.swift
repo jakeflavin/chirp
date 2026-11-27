@@ -779,7 +779,7 @@ struct LibraryWindow: View {
                 HStack(spacing: 0) {
                     LibraryList(
                         section: app.section, items: items, folders: folders, selectedID: $selectedID, askDelete: { deleting = $0 },
-                        pin: pin, move: move, newFolder: { folderFor = $0; namingFolder = true }
+                        pin: pin, move: move, newFolder: { folderFor = $0; namingFolder = true }, header: headerParts(for:)
                     )
                         .frame(width: listWidth)
                     Rectangle().fill(PageLayout.line).frame(width: 1)
@@ -913,7 +913,7 @@ struct LibraryWindow: View {
         let recording = item.kind == .meeting || item.kind == .voiceNote
         var export: [HeaderMenuItem] = [
             HeaderMenuItem(id: "markdown", title: "Markdown…") { export(item, markdown: true) },
-            HeaderMenuItem(id: "plain", title: "Plain text…") { export(item, markdown: false) },
+            HeaderMenuItem(id: "plain", title: "Plain Text…") { export(item, markdown: false) },
         ]
         if item.kind != .document, item.audioFile != nil {
             export.append(HeaderMenuItem(id: "audio", title: "Audio…") { exportAudio(item) })
@@ -1347,8 +1347,8 @@ private struct FolderRow: View {
             }
         }
         .onHover { hovering = $0 }
-        .dropDestination(for: String.self) { texts, _ in
-            let ids = texts.compactMap(LibraryDrag.id(from:))
+        .dropDestination(for: LibraryDrag.self) { dragged, _ in
+            let ids = dragged.map(\.id).filter { $0 >= 0 }
             ids.forEach(drop)
             return !ids.isEmpty
         } isTargeted: { targeted = $0 }
