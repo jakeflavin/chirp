@@ -241,7 +241,7 @@ final class ModelCenter {
         await unload(.language)
         Self.sessionFallback = nil
         Self.languageChoice = size
-        Log.write("models", "language model: \(size?.name ?? "automatic") → \(Self.languageSize.name), Mac has \(Self.memoryBytes / 1_073_741_824) GB")
+        Log.write("models", "language model: \(size?.name ?? "automatic") → \(Self.languageSize.name), Mac has \(MacMemory.wholeGigabytes(Self.memoryBytes)) GB")
         states[.language] = Self.hubModelExists(Self.languageSize.modelID) ? .onDisk : .notDownloaded
         languageVersion += 1
     }
@@ -284,8 +284,8 @@ final class ModelCenter {
         }
     }
 
-    /// Under about 12 GB, loading one heavy model unloads the others first.
-    let lowMemory = ModelCenter.memoryBytes < 12 * 1_073_741_824
+    /// Under about 12 GB, loading one heavy model unloads the others first (`MacMemory`).
+    let lowMemory = MacMemory.keepsOneHeavyModel(memoryBytes: ModelCenter.memoryBytes)
 
     /// Extra loaders and unloaders registered by features built on other models (voice, meeting…).
     private var loaders: [ModelKind: @MainActor (@escaping @Sendable (Double) -> Void) async throws -> Void] = [:]
@@ -373,7 +373,7 @@ final class ModelCenter {
         }
         diskChecks[.transcription] = { Transcriber.isDownloaded }
         diskChecks[.language] = { Self.hubModelExists(Self.languageSize.modelID) }
-        Log.write("models", "Mac has \(Self.memoryBytes / 1_073_741_824) GB; language model \(Self.languageSize.name) (\(Self.languageChoice == nil ? "automatic" : "chosen"))")
+        Log.write("models", "Mac has \(MacMemory.wholeGigabytes(Self.memoryBytes)) GB; language model \(Self.languageSize.name) (\(Self.languageChoice == nil ? "automatic" : "chosen"))")
         refresh()
     }
 

@@ -29,3 +29,27 @@ import Testing
         #expect(LanguageModelSize.small.smaller == nil)
     }
 }
+
+@Suite struct MacMemoryTests {
+    let gb: UInt64 = 1_073_741_824
+
+    @Test func onlySmallMacsKeepOneHeavyModel() {
+        #expect(MacMemory.keepsOneHeavyModel(memoryBytes: 8 * gb))
+        #expect(!MacMemory.keepsOneHeavyModel(memoryBytes: 12 * gb))
+        #expect(!MacMemory.keepsOneHeavyModel(memoryBytes: 16 * gb))
+    }
+
+    @Test func deeperChecksEverywhereFollowTheMediumModel() {
+        for memory in [8, 12, 15, 16, 24, 64].map({ UInt64($0) * gb }) {
+            #expect(MacMemory.deepChecksEverywhereByDefault(memoryBytes: memory) == (LanguageModelSize.recommended(memoryBytes: memory) == .medium))
+        }
+        // A 16 GB Mac that reports a little less still counts.
+        #expect(MacMemory.deepChecksEverywhereByDefault(memoryBytes: 16 * gb - 200_000_000))
+        #expect(!MacMemory.deepChecksEverywhereByDefault(memoryBytes: 8 * gb))
+    }
+
+    @Test func eachSizeNamesItsOwnModel() {
+        #expect(Set(LanguageModelSize.allCases.map(\.modelID)).count == LanguageModelSize.allCases.count)
+        #expect(MacMemory.wholeGigabytes(16 * gb - 1000) == 16)
+    }
+}

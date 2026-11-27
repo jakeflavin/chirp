@@ -38,7 +38,8 @@ Not a model: Harper, the spelling and grammar checker. It is compiled into the a
 | Model | Constant |
 |---|---|
 | Parakeet | `Transcriber.modelSource`, `modelFile`, `modelBytes`, `modelSHA256` (`ChirpML/Transcriber.swift`) |
-| Language sizes | `LanguageModelSize.modelID` (`ChirpCore/Engine/ModelChoice.swift`). `LanguageModel.lightModelID` / `qualityModelID` repeat two of them (see the clean-up list) |
+| Language sizes | `LanguageModelSize.modelID`, `downloadGB`, `comfortableMemoryGB` (`ChirpCore/Engine/ModelChoice.swift`), the only place they are named. `LanguageModel.load(modelID:)` is always told which |
+| Memory lines | `MacMemory` (same file): one heavy model at a time under 12 GB, and the deeper writing check in other apps on by default where the medium size is picked |
 | Summary model + adapter | `ModelCenter.tldrSummaryModel` (`App/Sources/Services/ModelCenter.swift`) |
 | Search | `Embedder.modelID` (`ChirpML/Embedder.swift`) |
 | Sentence checker folder | `ModelCenter.summaryCheckerFolder`, `summaryCheckerDirectory` |

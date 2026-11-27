@@ -598,7 +598,7 @@ struct LanguageModelPicker: View {
     @State private var choice = ModelCenter.languageChoice?.rawValue ?? ""
 
     /// This Mac's memory in whole gigabytes, for the note under the picker.
-    private var memoryGB: Int { Int((Double(ModelCenter.memoryBytes) / 1_073_741_824).rounded()) }
+    private var memoryGB: Int { MacMemory.wholeGigabytes(ModelCenter.memoryBytes) }
     private var recommended: LanguageModelSize { .recommended(memoryBytes: ModelCenter.memoryBytes) }
 
     var body: some View {

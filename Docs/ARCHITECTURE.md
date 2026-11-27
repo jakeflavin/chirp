@@ -218,7 +218,7 @@ What it does:
 - **Registration.** The speech and language models are built in. Features that own other models
   register them: `ReadController` registers `.voice`, `MeetingRecorder` registers `.speakers`,
   `SearchController` registers `.search`, each with `onDisk`, `load` and `unload` closures.
-- **One heavy model at a time** on Macs under 12 GB (`lowMemory`). `heavy` is `[.language, .voice]`.
+- **One heavy model at a time** on Macs under 12 GB (`lowMemory`, from `MacMemory` in `ChirpCore/Engine/ModelChoice.swift`). `heavy` is `[.language, .voice]`.
   Loading one heavy model first unloads the other, waiting up to 30 s (`unloadWait`); if it cannot be
   put away the caller gets "busy". A model in use (`beginUse`/`endUse`) is never unloaded to make room.
 - **Idle unloading.** On small Macs a heavy model unused for 4 minutes (voice: 30 minutes) is unloaded.

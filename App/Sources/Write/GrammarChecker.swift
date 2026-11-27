@@ -33,9 +33,12 @@ final class GrammarChecker: @unchecked Sendable {
         set { UserDefaults.standard.set(newValue, forKey: "deepChecks") }
     }
     /// Whether it also runs on text fields in other apps. Off by default on Macs with little memory,
-    /// because it keeps the language model loaded while you type.
+    /// because it keeps the language model loaded while you type (`MacMemory`).
     static var deepInOtherApps: Bool {
-        get { UserDefaults.standard.object(forKey: "deepChecksEverywhere") as? Bool ?? (ProcessInfo.processInfo.physicalMemory >= 15 * 1_073_741_824) }
+        get {
+            UserDefaults.standard.object(forKey: "deepChecksEverywhere") as? Bool
+                ?? MacMemory.deepChecksEverywhereByDefault(memoryBytes: ProcessInfo.processInfo.physicalMemory)
+        }
         set { UserDefaults.standard.set(newValue, forKey: "deepChecksEverywhere") }
     }
 
