@@ -545,7 +545,7 @@ struct ShortcutsSettings: View {
                 ShortcutRow(title: "Type the last dictation again", name: .pasteLast)
             } }
             if on.isOn(.notes) { SettingsSection("Notes") {
-                ShortcutRow(title: "New note", help: "Opens a note in the perch", name: .recordNote)
+                ShortcutRow(title: "New note", help: on.isOn(.dictate) ? "Opens a note in the perch that listens until you type. Press again to close it" : "Opens a note in the perch", name: .recordNote)
             } }
             if on.isOn(.meetings) { SettingsSection("Meetings") {
                 ShortcutRow(title: "Record a meeting, or stop", name: .recordMeeting)

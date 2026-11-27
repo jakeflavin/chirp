@@ -354,6 +354,7 @@ final class PerchController {
             })
         }
         PerchStyle.actionCount = arrangement.shown(Features.shared.set).bar.count
+        notes.dictation = dictation
         notes.onOpen = { [weak self] in self?.noteOpened() }
         notes.onClose = { [weak self] saved, announce in self?.noteClosed(saved, announce: announce) }
         Features.shared.whenChanged { [weak self] old, new in
@@ -777,11 +778,13 @@ final class PerchController {
         }
     }
 
-    /// Note on the perch, and right ⌥ N: the perch grows into a note to type or dictate into. Pressed
-    /// with a note open, it closes it, saved.
+    /// Note on the perch, in the menu bar and on Home, and right ⌥ N: the perch grows into a note with
+    /// the keyboard in it, listening (Dictate on): what is said goes in as it is heard, and typing takes
+    /// over. Pressed with a note open, it stops listening, waits for the last words, and closes it, saved.
     func note() {
         guard Features.on(.notes) else { return }
-        if notes.isOpen { notes.close() } else { notes.openNew() }
+        // A recording has the microphone: the note is for typing then.
+        if notes.isOpen { notes.close() } else { notes.openNew(listen: recorder.phase != .recording) }
     }
 
     /// "Record a Meeting" in More and the menu bar, and its shortcut: for a meeting in the room, or one
@@ -1321,7 +1324,7 @@ final class PerchController {
 
 /// A clear, borderless panel that floats over other apps and never makes Chirp the active app.
 /// It takes the keyboard only when a text field in it is clicked (the meeting notes), or when the perch
-/// asks for it (the rephrase panel, a keyboard review).
+/// asks for it (a new note, the rephrase panel, a keyboard review).
 final class PerchPanel: NSPanel {
     init() {
         super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
