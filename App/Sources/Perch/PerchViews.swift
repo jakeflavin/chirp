@@ -408,9 +408,10 @@ private struct LandingSpots: View {
                 let frame = perch.restFrame(for: spot)
                 let near = perch.nearSpot == spot
                 let shape = RoundedRectangle(cornerRadius: min(frame.width, frame.height) / 2, style: .circular)
-                shape.fill(near ? PerchStyle.amber.opacity(0.35) : Color.white.opacity(0.28))
+                // Float and Ink follow light and dark, so the spots read over a dark desktop as over a light one.
+                shape.fill(near ? PerchStyle.amber.opacity(0.35) : Color.float.opacity(0.4))
                     .overlay(shape.strokeBorder(
-                        near ? PerchStyle.onAmber : Color.black.opacity(0.45),
+                        near ? PerchStyle.onAmber : Color.ink.opacity(0.5),
                         style: StrokeStyle(lineWidth: 1.5, dash: near ? [] : [5, 4])))
                     .frame(width: frame.width, height: frame.height)
                     .offset(x: frame.minX, y: frame.minY)
@@ -714,7 +715,7 @@ private struct PerchBubble: View {
     @ViewBuilder private var mark: some View {
         if saying.isError {
             Circle().fill(PerchStyle.red).frame(width: 8, height: 8).padding(.trailing, 2)
-                .accessibilityLabel("Something went wrong")
+                .accessibilityLabel("Error")
         }
     }
 
