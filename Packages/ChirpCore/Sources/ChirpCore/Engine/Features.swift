@@ -29,7 +29,7 @@ public enum Feature: String, CaseIterable, Identifiable, Sendable {
 
 /// A model more than one feature can need.
 public enum FeatureModel: String, CaseIterable, Sendable {
-    case speech, language, voice, speakers
+    case speech, language, voice, speakers, search
 }
 
 /// A page of the Library that exists for one or more features.
@@ -110,6 +110,8 @@ public struct FeatureSet: Equatable, Sendable {
         case .language: isOn(.meetings) || isOn(.write) || isOn(.summarize)
         case .voice: isOn(.read)
         case .speakers: isOn(.meetings)
+        // Search by meaning looks through saved items, so it is needed while any kind of saved item is listed.
+        case .search: !shownKinds.isEmpty
         }
     }
 

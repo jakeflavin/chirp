@@ -212,7 +212,9 @@ the `itemNote` table. The Notes switch covers both. No language model is used.
 and adds matches by meaning when the search model is ready (`SemanticSearch` in
 `Packages/ChirpCore/.../Store/SemanticSearch.swift`). Search by meaning is off until the user presses
 "Turn on search by meaning"; that downloads the search model and embeds every item's passages into the
-`chunk` table. New items are embedded only when the user presses "Search N new items by meaning".
+`chunk` table. New items are embedded only when the user presses "Search N new items by meaning". With
+every feature that saves items switched off (Writing checks alone), search by meaning does not run and
+the search model is unloaded (`FeatureModel.search`).
 
 **Models.** bge-small in the language helper (search only).
 

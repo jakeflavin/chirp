@@ -635,7 +635,7 @@ private struct ModelsStep: View {
         if on.needs(.language) { out.append(.language) }
         if on.needs(.voice) { out.append(.voice) }
         if on.needs(.speakers) { out.append(.speakers) }
-        out.append(.search)
+        if on.needs(.search) { out.append(.search) }
         return out
     }
 

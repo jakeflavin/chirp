@@ -109,6 +109,7 @@ final class Features {
         case .language: .language
         case .voice: .voice
         case .speakers: .speakers
+        case .search: .search
         }
     }
 
