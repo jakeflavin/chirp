@@ -24,8 +24,8 @@ No model is sent your data. Models are downloaded to the Mac and run there.
 
 ## When Chirp uses the network
 
-There are three kinds of network use: downloading models and tools, fetching something you asked for
-(a link or a web page), and showing a saved web page. Each is listed below.
+There are two kinds of network use: downloading models and tools, and fetching something you asked for
+(a link or a web page). Each is listed below. Showing a saved web page uses none.
 
 What every request sends, unless noted: your IP address, the address being fetched, and standard HTTP
 headers. Chirp adds no identifiers, cookies or account details of its own. Where Chirp sets its own
@@ -56,15 +56,16 @@ User-Agent, it is listed.
 | A video page, through yt-dlp | Right after, if the link is a page | The page's site and whatever hosts yt-dlp uses to get its sound | yt-dlp's own requests. Run with `--no-update --ignore-config --no-playlist`; no cookies or logins are passed | `LinkImporter.fetchWithTool`, `LinkTool.arguments` in `ChirpCore/Meetings/MediaLinks.swift` |
 | A web page to read or summarize | You type or paste an address to import | The address you gave | A GET. User-Agent `Mozilla/5.0 (Macintosh) Chirp reader` | `DocumentImporter.importWebPage` in `App/Sources/Read/DocumentImporter.swift` |
 | Pictures in that page | Right after, when "keep pictures" is on (the default) | Each picture's own address, up to 120 pictures | A GET per picture. Same User-Agent | `DocumentImporter.stageWebImages`, `imageData` |
-| A saved copy of that page | Right after, when "keep the original" is on (the default) | The page and everything it loads | The page is loaded once in an off-screen web view with no stored data (non-persistent). The page's own scripts run during that load, so its analytics and other third-party requests can run too | `PageSaver.archive` in `App/Sources/Read/DocumentFiles.swift` |
+| A saved copy of that page | Right after, when "keep the original" is on (the default) | The page and everything it loads | The page is loaded once in an off-screen web view with no stored data (non-persistent) and its scripts off, so the page's analytics and other scripts do not run. The pictures, style sheets and frames the page itself names are fetched, as a browser would | `PageSaver.archive` in `App/Sources/Read/DocumentFiles.swift` |
 | Fetch the original again | You press it on a web page saved without one | The page's saved address | Same as the saved copy; falls back to a plain GET | `OriginalFetch.fetch` in `App/Sources/Read/FetchOriginal.swift` |
 
 ### Showing a saved web page
 
 The Original view of a saved web page (`SavedPage` in `App/Sources/Read/OriginalView.swift`) shows the
-saved copy with scripts off and no stored data. If the copy refers to a picture or style sheet that was
-not saved in it, the web view may fetch that from the site while you look at it. Clicking a link opens
-it in your browser.
+saved copy with scripts off and no stored data, and fetches nothing from the web: content rules
+(`SavedPageRules` in `ChirpCore/Reading/SavedPageRules.swift`) block every web address except those
+saved in the copy. A picture or style sheet that was not saved is left out. Clicking a link opens it in
+your browser.
 
 Links you click anywhere in Chirp (a meeting's calendar links, links in a document) open in your
 default browser. Chirp does not fetch them itself.

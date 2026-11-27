@@ -1,4 +1,5 @@
 import AppKit
+import ChirpCore
 import PDFKit
 import Quartz
 import SwiftUI
@@ -74,6 +75,8 @@ private struct PDFPages: NSViewRepresentable {
 }
 
 /// The saved copy of a web page. Scripts in it are not run: it is the page as it looked, not a live one.
+/// Nothing is fetched from the web while it shows: content rules block every web address except those
+/// saved in the copy, so a picture that was not saved is left out instead of being fetched from the site.
 private struct SavedPage: NSViewRepresentable {
     let url: URL
     let base: URL?
@@ -92,10 +95,35 @@ private struct SavedPage: NSViewRepresentable {
     func updateNSView(_ view: WKWebView, context: Context) {
         guard context.coordinator.shown != url else { return }
         context.coordinator.shown = url
-        if url.pathExtension.lowercased() == "webarchive", let data = try? Data(contentsOf: url) {
-            view.load(data, mimeType: "application/x-webarchive", characterEncodingName: "utf-8", baseURL: base ?? url)
-        } else {
-            view.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
+        let url = url
+        let base = base
+        let coordinator = context.coordinator
+        Task { @MainActor in
+            // Reading the copy and listing what it holds can take a moment for a large page.
+            let (archive, rules) = await Task.detached { () -> (Data?, String) in
+                let archive = url.pathExtension.lowercased() == "webarchive" ? try? Data(contentsOf: url) : nil
+                return (archive, SavedPageRules.json(allowing: archive.map(SavedPageRules.addresses(inArchive:)) ?? []))
+            }.value
+            // Each copy compiles its own list. It is removed from the store once the view holds it, so the
+            // addresses of saved pages are not left on disk outside the library.
+            let store = WKContentRuleListStore.default()
+            let identifier = "chirp.savedPage." + UUID().uuidString
+            let list = try? await store?.compileContentRuleList(forIdentifier: identifier, encodedContentRuleList: rules)
+            try? await store?.removeContentRuleList(forIdentifier: identifier)
+            // Another copy was asked for meanwhile; it is loading itself.
+            guard coordinator.shown == url else { return }
+            guard let list else {
+                // Without the rules the copy could reach the web, so it is not shown.
+                Log.write("read", "a saved page was not shown: its content rules did not compile")
+                return
+            }
+            view.configuration.userContentController.removeAllContentRuleLists()
+            view.configuration.userContentController.add(list)
+            if let archive {
+                view.load(archive, mimeType: "application/x-webarchive", characterEncodingName: "utf-8", baseURL: base ?? url)
+            } else {
+                view.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
+            }
         }
     }
 
