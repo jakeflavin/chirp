@@ -7,7 +7,7 @@ extension KeyboardShortcuts.Name {
     /// Applies every fix in the sentence the cursor is in: ⌥⇥, the way a developer would expect
     /// autocomplete to work. It is registered only while a sentence has a fix, so at any
     /// other time the keys go to the app in front as usual (tables in Pages and Notes, Safari's fields).
-    static let fixSentence = Self("fixSentence", default: .init(.tab, modifiers: [.option]))
+    static let fixSentence = Self("fixSentence", initial: .init(.tab, modifiers: [.option]))
 }
 
 /// Offers to fix the sentence the cursor is in: pressing the shortcut applies every spelling and grammar

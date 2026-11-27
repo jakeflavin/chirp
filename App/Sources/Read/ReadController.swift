@@ -9,7 +9,7 @@ import SwiftUI
 extension KeyboardShortcuts.Name {
     /// Reads the selected text (or the field or page in front) aloud from any app; pressed again, it stops.
     /// Right Option and L, for Listen (see `ShortcutLayout`).
-    static let readSelection = Self("readSelection", default: .init(.l, modifiers: [.option]))
+    static let readSelection = Self("readSelection", initial: .init(.l, modifiers: [.option]))
 }
 
 /// Reads documents aloud, sentence by sentence, and tracks which word is being spoken.

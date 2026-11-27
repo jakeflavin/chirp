@@ -44,11 +44,11 @@ enum PerchPosition: String, CaseIterable, Identifiable {
 extension KeyboardShortcuts.Name {
     /// Brings the Library window forward from any app.
     // These four are right Option and a letter (see `ShortcutLayout`).
-    static let openLibrary = Self("openLibrary", default: .init(.o, modifiers: [.option]))
+    static let openLibrary = Self("openLibrary", initial: .init(.o, modifiers: [.option]))
     /// Starts a meeting ("Record a Meeting"), or stops the recording under way.
-    static let recordMeeting = Self("recordMeeting", default: .init(.m, modifiers: [.option]))
+    static let recordMeeting = Self("recordMeeting", initial: .init(.m, modifiers: [.option]))
     /// Summarizes the selection, the text the cursor is in, or the page in front.
-    static let summarize = Self("summarize", default: .init(.u, modifiers: [.option]))
+    static let summarize = Self("summarize", initial: .init(.u, modifiers: [.option]))
 }
 
 /// Light, dark, or whatever macOS is set to.

@@ -194,15 +194,15 @@ final class WritingAssistant {
         self.models = models
         checker = GrammarChecker(engine: app.engine)
         checker.deepRunner = { [weak app, weak models] paragraph in
-            await MainActor.run { () -> Task<String?, Never> in
-                Task { @MainActor in
-                    guard let app, let models, (try? await models.ensure(.language)) != nil,
-                        let prompts = try? Prompts(engine: app.engine)
-                    else { return nil }
-                    return try? await models.language.run(
-                        instructions: prompts.instructions(for: .fix), text: paragraph,
-                        maxTokens: paragraph.count / 2 + 120, temperature: 0)
-                }
+            // Read once here: the weak references are not touched again from the task below.
+            guard let app, let models else { return nil }
+            // A task of its own, not cancelled with the check that asked: a paragraph read to the end is
+            // remembered, so it is worth finishing even when the text changed meanwhile.
+            return await Task { @MainActor in
+                guard (try? await models.ensure(.language)) != nil, let prompts = try? Prompts(engine: app.engine) else { return nil }
+                return try? await models.language.run(
+                    instructions: prompts.instructions(for: .fix), text: paragraph,
+                    maxTokens: paragraph.count / 2 + 120, temperature: 0)
             }.value
         }
     }

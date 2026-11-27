@@ -9,9 +9,9 @@ import SwiftUI
 /// The global shortcuts for dictation. The user can change them in Settings.
 extension KeyboardShortcuts.Name {
     /// Hands-free dictation: press once to start, again to stop. (Holding the hold key is the usual way.)
-    static let dictate = Self("dictate", default: .init(.space, modifiers: [.option]))
+    static let dictate = Self("dictate", initial: .init(.space, modifiers: [.option]))
     /// Types the last dictation again. With the right Option key only (see `ShortcutLayout`).
-    static let pasteLast = Self("pasteLast", default: .init(.p, modifiers: [.option]))
+    static let pasteLast = Self("pasteLast", initial: .init(.p, modifiers: [.option]))
 }
 
 /// How the dictation shortcut behaves. It is press to start and press to stop (`toggle`); the other two

@@ -696,13 +696,16 @@ struct ModelsSettings: View {
     private func measureDocuments() {
         let count = (try? Library(store: app.store).count(kind: .document)) ?? 0
         let root = ChirpStore.documentsDirectory
-        Task.detached {
-            var bytes: Int64 = 0
-            if let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.fileSizeKey]) {
-                for case let url as URL in files { bytes += Int64((try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0) }
-            }
-            let size = ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
-            await MainActor.run { documentsUse = "\(size) · \(count == 1 ? "1 document" : "\(count) documents")" }
+        Task {
+            // The folder is walked off the main actor; only the line it makes comes back to the view.
+            let size = await Task.detached { () -> String in
+                var bytes: Int64 = 0
+                if let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.fileSizeKey]) {
+                    for case let url as URL in files { bytes += Int64((try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0) }
+                }
+                return ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+            }.value
+            documentsUse = "\(size) · \(count == 1 ? "1 document" : "\(count) documents")"
         }
     }
 }

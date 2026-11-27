@@ -7,9 +7,9 @@ import SwiftUI
 extension KeyboardShortcuts.Name {
     /// Opens the panel on the text selected in any app.
     /// Right Option and I, for Improve (see `ShortcutLayout`).
-    static let writePanel = Self("writePanel", default: .init(.i, modifiers: [.option]))
+    static let writePanel = Self("writePanel", initial: .init(.i, modifiers: [.option]))
     /// Right ⌥ K: the rephrase card on the selected text. Right ⌥ I is Fix writing.
-    static let rephrase = Self("rephrase", default: .init(.k, modifiers: [.option]))
+    static let rephrase = Self("rephrase", initial: .init(.k, modifiers: [.option]))
 }
 
 /// The panel that opens on a shortcut with the text selected in any app: proofread, shorten, write out

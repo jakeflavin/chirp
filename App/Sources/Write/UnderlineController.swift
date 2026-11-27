@@ -34,7 +34,7 @@ struct SentenceBird: Equatable {
 extension KeyboardShortcuts.Name {
     /// Return, while a rewritten sentence is on its card waiting to be accepted. Registered only for
     /// as long as that card shows, so Return reaches the app in front at any other time.
-    static let acceptRewrite = Self("acceptRewrite", default: .init(.return, modifiers: []))
+    static let acceptRewrite = Self("acceptRewrite", initial: .init(.return, modifiers: []))
 }
 
 /// Shows spelling and grammar underlines inside other apps' text fields.
