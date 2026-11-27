@@ -94,13 +94,4 @@ public enum SemanticSearch {
             return Result(item: item, snippet: s?.0 ?? "", offset: s?.1, score: score)
         }
     }
-
-    /// The numbered passages given to the language model to answer a question from the user's notes.
-    public static func askContext(question: String, passages: [(title: String, text: String)]) -> String {
-        var s = "QUESTION: \(question)\n\nPASSAGES FROM MY NOTES:\n"
-        for (i, p) in passages.enumerated() {
-            s += "[\(i + 1)] (\(p.title)) \(p.text)\n\n"
-        }
-        return s
-    }
 }

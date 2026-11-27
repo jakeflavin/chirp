@@ -228,24 +228,6 @@ public struct RecordingContext: Codable, Sendable, Equatable {
         "file", "edit", "view", "window", "help", "please", "thanks", "hello", "hi", "we", "i", "you", "it", "our", "your", "my",
     ]
 
-    /// What can be looked up when a question is asked about the recording: the calendar's description, each
-    /// document and each screen, as titled passages.
-    public func passages(pieceCharacters: Int = 1800) -> [(title: String, text: String)] {
-        var out: [(title: String, text: String)] = []
-        var calendar: [String] = []
-        if let eventTitle, !eventTitle.isEmpty { calendar.append("Title: \(eventTitle)") }
-        if !attendees.isEmpty { calendar.append("Invited: \(attendees.joined(separator: ", "))") }
-        if let eventDetails, !eventDetails.isEmpty { calendar.append(String(Self.squeeze(eventDetails).prefix(pieceCharacters))) }
-        if !calendar.isEmpty { out.append(("Calendar", calendar.joined(separator: ". "))) }
-        for document in attachments where !document.text.isEmpty {
-            out.append(("Document: \(document.name)", String(Self.squeeze(document.text).prefix(pieceCharacters))))
-        }
-        for screen in screens where !screen.text.isEmpty {
-            out.append(("On screen at \(screen.at.clock) in \(screen.app)", String(Self.squeeze(screen.text).prefix(pieceCharacters))))
-        }
-        return out
-    }
-
     /// How much of an attachment is kept with a recording.
     public static let attachmentCharacters = 4000
 

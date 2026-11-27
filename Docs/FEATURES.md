@@ -88,7 +88,7 @@ meetings and offer to record; Screen Recording only when the camera button is us
 language model (meeting notes only; voice notes use no language model).
 
 **Debug hooks.** `meeting-start`, `meeting-stop`, `meeting-note`, `meeting-capture`, `meeting-notes-stop`,
-`meeting-redo`, `meeting-offer`, `meeting-offer-accept`, `meeting-ask`, `meeting-attach`,
+`meeting-redo`, `meeting-offer`, `meeting-offer-accept`, `meeting-attach`,
 `meeting-detach`, `meeting-import`, `calendar-fake`, `call-name`, `transcribe-link`, `link-ask`,
 `link-kind`, `link-choose`, `link-cancel`, `link-tool`, `job-hold`, `job-cancel`, `retranscribe-kept`,
 `drop`, `drop-do`, `file-drag`. Environment: `CHIRP_RECORD_TEST`, `CHIRP_LINKTOOL_BASE`,

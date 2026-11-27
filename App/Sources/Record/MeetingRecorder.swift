@@ -528,10 +528,6 @@ final class MeetingRecorder {
             if q["done"] == "1" { Jobs.shared.releaseHeld() } else { Jobs.shared.hold(q["name"] ?? "the link") }
         }
         LinkHandler.commands["job-cancel"] = { _ in Jobs.shared.cancelFirstWaiting() }
-        LinkHandler.commands["meeting-ask"] = { [weak self] q in
-            guard let self, let id = (try? self.library.items(kinds: [.meeting]))?.first?.id else { return }
-            Task { await self.ask(q["q"] ?? "", about: id) }
-        }
         LinkHandler.stateProviders["meeting"] = { [weak self] in
             guard let self else { return [:] }
             let items = (try? self.library.items(kinds: [.meeting, .voiceNote])) ?? []
@@ -566,11 +562,9 @@ final class MeetingRecorder {
             out["notesState"] = last?.id.flatMap { self.notesState(for: $0) }.map { "\($0)" } ?? ""
             out["notesStopped"] = self.notesStoppedFor != nil
             out["arrivals"] = self.arrivals
-            out["answer"] = self.answer?.text ?? ""
             out["headphones"] = self.onHeadphones.map { "\($0)" } ?? ""
             out["headphonesNow"] = AudioDevices.outputsAreHeadphones()
             out["playingThrough"] = AudioDevices.devicesOtherAppsPlayThrough().map { AudioDevices.name(of: $0) }
-            out["asking"] = self.asking
             out["attendees"] = last?.source ?? ""
             out["liveTitle"] = self.title
             out["context"] = last?.context ?? ""
@@ -1680,7 +1674,7 @@ final class MeetingRecorder {
             try await models.ensure(.language)
             var prompts = try Prompts(engine: app.engine)
             // What the recording was given (calendar, documents, screens) tells the notes how names are spelled.
-            // The documents themselves stay out of the notes; they answer questions asked about the recording.
+            // The documents themselves stay out of the notes.
             // `attach=excerpt` in a test copy also hands the model a
             // short excerpt of the attached files; `attach=off` keeps even their names from it.
             let attachMode = Self.attachDefault
@@ -1881,43 +1875,6 @@ final class MeetingRecorder {
         _ = try? library.save(item)
         version += 1
         Log.write("record", "a voice note was given a title")
-    }
-
-    // MARK: Questions about one meeting
-
-    /// True while a question about a recording is being answered.
-    private(set) var asking = false
-    /// The latest answer, and the meeting and question it belongs to.
-    private(set) var answer: (itemID: Int64, question: String, text: String)?
-
-    /// Answers a question from this meeting's own notes and transcript, and nothing else.
-    func ask(_ question: String, about id: Int64) async {
-        let q = question.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !q.isEmpty, !asking, let item = try? library.item(id) else { return }
-        asking = true
-        defer { asking = false }
-        let script = MeetingText.script((try? library.segments(itemID: id)) ?? [])
-        // A short meeting fits whole; from a long one take the parts that share the most words with the question.
-        // The transcript, and whatever the recording was given: its calendar entry, documents and screens.
-        var passages = TextChunker.chunks(script, maxCharacters: 1800).map { (title: "Transcript", text: $0) }
-            + RecordingContext(json: item.context).passages()
-        if passages.count > 3 {
-            let words = Set(q.lowercased().split { !$0.isLetter && !$0.isNumber }.map(String.init).filter { $0.count > 3 })
-            passages = passages.map { passage in (passage, words.filter { passage.text.lowercased().contains($0) }.count) }
-                .sorted { $0.1 > $1.1 }.prefix(3).map(\.0)
-        }
-        if !item.body.isEmpty { passages.insert((title: "My notes", text: item.body), at: 0) }
-        do {
-            try await models.ensure(.language)
-            let prompts = try Prompts(engine: app.engine)
-            let out = try await models.language.run(
-                instructions: prompts.askInstructions(), text: SemanticSearch.askContext(question: q, passages: passages),
-                maxTokens: 250, temperature: 0)
-            let text = out.replacingOccurrences(of: #"\s*\[\d+\]"#, with: "", options: .regularExpression)
-            answer = (id, q, text.replacingOccurrences(of: "in your notes", with: "in this recording"))
-        } catch {
-            app.report(error, doing: "answer from this recording")
-        }
     }
 
     // MARK: Library helpers used by the page
