@@ -198,9 +198,11 @@ struct ChirpApp: App {
         _recorder = State(initialValue: recorder)
         let detector = MeetingDetector(recorder: recorder)
         _detector = State(initialValue: detector)
+        // One writing assistant, and so one Harper checker, serves the checked editor, the rewrite panel,
+        // underlines and notes. Each checker holds its own copy of Harper's dictionary.
         let assistant = WritingAssistant(app: app, models: models)
         _writeModel = State(initialValue: WriteModel(app: app, assistant: assistant))
-        let selection = SelectionPanelController(app: app, assistant: WritingAssistant(app: app, models: models))
+        let selection = SelectionPanelController(app: app, assistant: assistant)
         _selectionPanel = State(initialValue: selection)
         if LinkHandler.debugEnabled {
             // A copy driven by test links has nobody in front of it, and with the display off macOS
