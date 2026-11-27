@@ -620,6 +620,11 @@ private struct ReadingPage: View {
                     GeometryReader { proxy in
                         if stop != nil, let y = Self.markerY(layouts, in: proxy) {
                             Image("chirp.bookmarkFill").font(.system(size: 13)).foregroundStyle(Color.amber)
+                                // Amber alone is too faint on Paper: a thin On Amber edge holds its shape.
+                                .shadow(color: Color.onAmber.opacity(0.35), radius: 0, x: 0.5, y: 0)
+                                .shadow(color: Color.onAmber.opacity(0.35), radius: 0, x: -0.5, y: 0)
+                                .shadow(color: Color.onAmber.opacity(0.35), radius: 0, x: 0, y: 0.5)
+                                .shadow(color: Color.onAmber.opacity(0.35), radius: 0, x: 0, y: -0.5)
                                 .frame(width: 13, height: 18)
                                 .position(x: -16.5, y: y)
                                 .accessibilityLabel("You stopped here")

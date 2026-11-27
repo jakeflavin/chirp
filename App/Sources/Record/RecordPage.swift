@@ -479,7 +479,11 @@ struct MeetingDetail: View {
             SectionHeading("With this recording", count: context.screens.count + min(4, context.links.count))
             ForEach(context.links.prefix(4), id: \.self) { link in
                 if let url = URL(string: link) {
-                    Link(destination: url) { Label(url.host() ?? link, image: "chirp.link").font(.system(size: 13)).lineLimit(1) }
+                    // Ink and underlined: Clay at this size is too faint to read on Paper.
+                    Link(destination: url) {
+                        Label(url.host() ?? link, image: "chirp.link").font(.system(size: 13)).lineLimit(1)
+                            .foregroundStyle(Color.ink).underline()
+                    }
                 }
             }
             if !context.screens.isEmpty {

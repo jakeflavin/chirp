@@ -222,7 +222,7 @@ colour has a light and a dark value in `App/Resources/Assets.xcassets` and a nam
 | Float | `Color.float` | `Float` | `#FFFFFF` | `#272A33` | Anything over other apps: the perch's solid surface, the suggestion card. A step lighter than Card in the dark so it lifts off a dark window |
 | Ink | `Color.ink` | `Ink` | `#1F2430` | `#ECE8E1` | Words you read. Lines and tints are Ink at low strength |
 | Quiet | `Color.quiet` | `Quiet` | `#6B7080` | `#9BA0AE` | Words that support: captions, times, counts, reasons |
-| Clay (accent) | `Color.accentColor` | `AccentColor` | `#D9621F` | `#F28A45` | The system accent: switches, prominent system buttons, selection, focus rings, links |
+| Clay (accent) | `Color.accentColor` | `AccentColor` | `#D9621F` | `#F28A45` | The system accent: switches, prominent system buttons, selection, focus rings. Not link text (rule 9) |
 | Amber | `Color.amber` (`.birdBody`) | `BirdBody` | `#F6B93B` | `#F6B93B` | The bird, and what it offers or is doing: the action in use, the main action of a row, the suggested fix, counts, progress |
 | On Amber | `Color.onAmber` | `OnAmber` | `#2B2110` | `#2B2110` | Words and icons on Amber |
 | Robin | `Color.spelling` | `Spelling` | `#C23A4B` | `#F27A8A` | A mistake (spelling). Also the recording light and anything that deletes |
@@ -275,6 +275,10 @@ colour has a light and a dark value in `App/Resources/Assets.xcassets` and a nam
 8. **Colour is never the only signal.** An underline's colour has a matching dot and a sentence in its card;
    the recording light has the word "Recording" beside it; each underline kind also has its own line style
    (spelling wavy, grammar solid, style dashed, snippet cue dotted).
+9. **Links in a window are Ink, underlined.** Clay text at 13 pt is under 4.5:1 on Paper. A `HeadingLink`
+   is Quiet and turns Ink under the pointer.
+10. **Small Amber on Paper gets an edge.** A thin Amber mark on Paper (the progress bar, the "You stopped
+    here" bookmark) has a 1 pt On Amber 35% edge so its shape reads.
 
 ---
 
