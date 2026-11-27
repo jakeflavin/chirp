@@ -13,8 +13,7 @@ model runs on the Mac. The Xcode project is generated from `project.yml` with Xc
 2. **Dependencies point one way:** `App` → `ChirpML` → `ChirpCore`. `ChirpCore` imports nothing but
    Foundation and GRDB. Never import `ChirpML` or the app from `ChirpCore`.
 3. **New helpers are built on `ModelHelper`** (`Packages/ChirpML/Sources/ChirpML/ModelHelper.swift`).
-   The speech worker and the language helper have their own launchers for reasons given below; do not
-   copy them.
+   The speech worker has its own launcher for reasons given below; do not copy it.
 4. **Every model goes through `ModelCenter`** (`App/Sources/Services/ModelCenter.swift`) for download
    state, loading, unloading and memory.
 5. **Every feature checks its switch** (`Features`). A switched-off feature does nothing: no UI, no
@@ -114,7 +113,7 @@ See [FEATURES.md](FEATURES.md) for each feature's flow through these files.
   (transcribe.   bge-small      (FluidAudio) (FluidAudio)      (FluidAudio)
    cpp, GPU/CPU) MiniCheck
                  (MLX)
-  SpeechSupervisor LanguageSupervisor  ───── ModelHelper (one each) ─────
+  SpeechSupervisor ──────────────────── ModelHelper (one each) ──────────────
 ```
 
 `Main.main()` in `App/Sources/Shell/ChirpApp.swift` checks the first argument before the app starts.
@@ -123,7 +122,7 @@ With a helper flag the process runs that helper and never becomes an app.
 | Helper | Flag | Code (helper side / app side) | Runs | Launcher |
 |---|---|---|---|---|
 | Speech worker | `--transcribe-worker` | `SpeechWorker` / `SpeechSupervisor` in `SpeechWorker.swift`, used by `Transcriber` | Parakeet TDT v2 through transcribe.cpp | `SpeechSupervisor` |
-| Language helper | `--language-worker` | `LanguageWorker` / `LanguageSupervisor` in `LanguageWorker.swift`, used by `LanguageModel`, `Embedder`, `FactChecker` | The language model (and summary model + adapter), the search model, the sentence checker (all MLX) | `LanguageSupervisor` |
+| Language helper | `--language-worker` | `LanguageWorker` / `LanguageSupervisor` in `LanguageWorker.swift`, used by `LanguageModel`, `Embedder`, `FactChecker` | The language model (and summary model + adapter), the search model, the sentence checker (all MLX) | `ModelHelper`, owned by `LanguageSupervisor` |
 | Voice helper | `--voice-worker` | `VoiceWorker` + `VoiceEngine` in `VoiceEngine.swift` / `Voice` in `Voice.swift` | Kokoro through FluidAudio | `ModelHelper` |
 | Listen helper, voice detection | `--listen-worker voice-detection` | `ListenWorker` + `VoiceDetectionEngine` in `ListenEngine.swift` / owned by `Transcriber` | Silero VAD through FluidAudio, processor only | `ModelHelper` |
 | Listen helper, speakers | `--listen-worker speakers` | `ListenWorker` + `SpeakerEngine` in `ListenEngine.swift` / `SpeakerLabeler` | pyannote speaker labelling through FluidAudio, processor only | `ModelHelper` |
@@ -153,18 +152,23 @@ Common behaviour of every helper:
 - `RestartLimit` (`ChirpCore/Engine/RestartLimit.swift`) stops a helper that keeps dying from being
   started over and over: after repeated deaths it is left alone for a minute.
 
-### The three launchers
+### The two launchers
 
-There are three launchers because the first two came before the shared one. They differ in real ways.
+There are two launchers because the speech worker came before the shared one, and differs from it in real ways.
 
 **`ModelHelper`** (`ChirpML/ModelHelper.swift`). Build new helpers on this one.
 
 - Frame: kind byte, request id, op name, JSON, and a raw binary blob (17-byte header). Every request
   carries an id and its reply carries the same id, so several requests can be in flight at once.
 - Helper side is `HelperWorker.serve([op: handler])`: a dictionary of async handlers. Each request
-  runs in its own task; a `cancel` frame cancels that task.
-- Replies: `progress`, `reply`, `failed`, `cancelled`. A `failed` reply is a refusal, not a death.
-- Per-request silence timer, reset by each `progress` frame.
+  runs in its own task; a `cancel` frame cancels that task. `serve(streaming:)` handlers can also send
+  pieces of an answer as they are made (generated text, one answer of a batch).
+- Replies: `progress`, `partial`, `reply`, `failed`, `cancelled`. A `failed` reply is a refusal, not a
+  death. Pieces reach the caller in order, all of them before the answer.
+- Per-request silence timer, reset by each `progress` or `partial` frame.
+- A call can opt out of being cancelled with its caller (`cancels: false`, for a load that must finish)
+  and out of counting as success for the restart limit (`succeeds: false`, where the client says when
+  the helper works with `succeeded()`).
 - Audio is written to the pipe straight from the `[Float]` array, not copied.
 - Test faults: `kill:<op>`, `kill-after:<op>:<ms>`, `hang:<op>` (`HelperFault`), set over the pipe.
 - Registers itself in `ModelHelper.all`, so the `helpers` debug state and `helper-fault` link work for
@@ -185,20 +189,29 @@ There are three launchers because the first two came before the shared one. They
   request starts a fresh worker.
 - Test faults come from the `CHIRP_WORKER_FAULT` environment variable, not the pipe.
 
-**`LanguageSupervisor`** (in `ChirpML/LanguageWorker.swift`). One shared instance for all MLX work.
+### The language helper
 
-- Frame: kind byte and a 4-byte length. Replies are split into two lanes by kind number: the language
-  model's lane, and the search lane (search model and sentence checker, kinds 110 and up). Each lane has
-  its own `TurnGate` (`runGate`, `embedGate`), so a search typed during a summary does not wait for it.
-- No request id: one request at a time per lane.
-- Streams generated text as `partial` frames; supports batched runs (`runBatch`, see
-  `BatchedGeneration.swift`) and a memory query.
+`LanguageWorker` runs on `ModelHelper` (`HelperWorker.serve(streaming:)`, ops `load`, `run`, `runBatch`,
+`embedLoad`, `embed`, `embedUnload`, `checkLoad`, `check`, `checkUnload`). Its app side,
+`LanguageSupervisor` (in `ChirpML/LanguageWorker.swift`), is one shared instance for all MLX work that
+owns the `ModelHelper` (named "language model" in the `helpers` state) and adds what MLX needs:
+
+- Two lanes, each with its own `TurnGate` (`runGate`, `embedGate`): language model runs take turns,
+  because two at once crashed MLX; the search model and the sentence checker take turns on the other,
+  so a search typed during a summary does not wait for it.
+- It never starts the helper inside a request: `LanguageModel`, `Embedder` and `FactChecker` call
+  `ensureRunning()`, and each request starts at most one helper. For the restart limit a finished run,
+  search or check counts as the helper working (`succeeded()`); a load alone does not, so a helper that
+  loads and then dies on every run is still left alone after a few deaths.
+- Generated text streams back as `partial` frames; batched runs (`runBatch`, see
+  `BatchedGeneration.swift`) send each answer as a piece. Only runs are cancelled with their caller.
 - The search model's idle timer (`Embedder.idleSeconds`, 240 s) can end the helper when it holds only
   the search model (`endIfOnlySearch`).
-- Test faults travel inside the run request (`LanguageRunRequest.fault`).
+- Test faults travel inside the run and search requests (`LanguageRunRequest.fault`); the `helper-fault`
+  link works on it as on every `ModelHelper`.
+- The helper and its requests run at user-initiated priority, a step below the other helpers.
 
-It differs because two language model runs at once crashed MLX, so runs must take turns, and because
-the three MLX models share one process, one MLX runtime and one capped buffer pool
+The three MLX models share one process, one MLX runtime and one capped buffer pool
 (`MLX.Memory.cacheLimit` is 64 MB). The sentence checker shares the search lane; the two are never
 used at once. A new MLX model should join this helper, not get a helper of its own.
 

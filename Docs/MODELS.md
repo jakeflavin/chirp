@@ -74,8 +74,9 @@ and the log says so once. Reset Chirp deletes the folder with the other models.
 
 ## Adding or swapping a model
 
-1. **Pick a helper.** MLX models join the language helper (`LanguageWorker.swift`): add frame kinds on
-   the right lane and an engine actor beside `EmbedEngine` / `CheckEngine`. Anything else gets a role
+1. **Pick a helper.** MLX models join the language helper (`LanguageWorker.swift`): add ops to its
+   `serve(streaming:)` table, a method on `LanguageSupervisor` on the right lane, and an engine actor
+   beside `EmbedEngine` / `CheckEngine`. Anything else gets a role
    in a helper built on `ModelHelper`: write an engine that runs only in the helper, a `run()` that
    calls `HelperWorker.serve([...])`, and an app-side client that owns a `ModelHelper(arguments:what:)`.
    Add the flag check to `Main.main()` in `App/Sources/Shell/ChirpApp.swift`.
