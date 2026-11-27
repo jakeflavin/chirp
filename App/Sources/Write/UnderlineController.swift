@@ -104,6 +104,11 @@ final class UnderlineController {
     private var measureTries = 0
     /// True while Fix all is putting its fixes in one after another; the usual checking waits.
     private var applying = false
+    /// True while one fix is going in. In a web editor that takes up to two seconds (the paste, then
+    /// looking for it), and a second fix started then would move the selection under the first one's paste.
+    private var fixing = false
+    /// Fixes chosen while another was going in, applied one at a time once it has landed.
+    private var waitingFixes: [(fix: Fix, issue: WritingIssue)] = []
     /// Problems that are not offered: inside code, or in a part of a web editor that is not on screen.
     private var unlisted: Set<WritingIssue.ID> = []
     /// Called when an app would not let Chirp put a fix in: the app's name, and the words the fix would
@@ -371,7 +376,7 @@ final class UnderlineController {
                 self.lookTime += took
                 // Work still to come (a check waiting for a pause in typing, underlines to put back after
                 // a scroll, a web editor not ready yet) keeps the looks coming at full speed.
-                let pending = self.needsCheck || self.hiddenForScroll || self.measureAgainAt != nil || self.applying || self.reviewing
+                let pending = self.needsCheck || self.hiddenForScroll || self.measureAgainAt != nil || self.applying || self.fixing || self.reviewing
                 self.backoff.record(changed: self.busy || pending)
                 // The wait can be cut short (`lookSoon`), so a key or a click is answered at once
                 // however long the gap had grown.
@@ -474,7 +479,7 @@ final class UnderlineController {
             guard let self else { return }
             // Pressing the shortcut takes the offer back; if nothing ends up changed, the next look makes it again.
             self.sentenceOfferFor = nil
-            guard self.text == before else { return }
+            guard !self.fixing, self.text == before else { return }
             self.rewrite(to: (before as NSString).replacingCharacters(in: fix.range, with: fix.replacement))
         }
     }
@@ -485,7 +490,7 @@ final class UnderlineController {
     /// or a move, and then checks or measures again as needed.
     private func tick() async {
         guard AXIsProcessTrusted() else { return clear(status: "Needs Accessibility permission") }
-        guard !reviewing, !applying else { return }
+        guard !reviewing, !applying, !fixing else { return }
         if let until = pausedUntil {
             if Date() < until { return clear(status: "Off for now") }
             pausedUntil = nil
@@ -864,7 +869,8 @@ final class UnderlineController {
     /// cursor is in, through `SentenceFixer`.)
     private func fixSentence(_ fix: Proofreading.SentenceFix) {
         lookSoon()
-        guard element != nil, NSMaxRange(fix.range) <= (text as NSString).length else { return }
+        // While a fix is still going in, the sentence's text is about to change; its bird comes back after.
+        guard !fixing, element != nil, NSMaxRange(fix.range) <= (text as NSString).length else { return }
         Log.write("write", "fix sentence: \(fix.count) fixes (bird)")
         FixTally.add(fix.count)
         sentenceOfferFor = nil
@@ -967,6 +973,10 @@ final class UnderlineController {
         lookSoon()
         switch action {
         case .apply(let fix):
+            if fixing {
+                waitingFixes.append((fix, issue))
+                return
+            }
             guard let element else {
                 return Log.write("write", "underlines: could not apply a fix, the text field was no longer in focus")
             }
@@ -1167,11 +1177,18 @@ final class UnderlineController {
         let putBack = { if let cursor { TextInserter.setRange(cursor, kAXSelectedTextRangeAttribute, in: element) } }
         // What the fix would have put in, for the perch to offer when the app refuses it.
         let wanted = Self.changedWords(from: before, to: updated)
-        guard Self.rewrite(element, from: before, to: updated, done: restore, failed: { [weak self] in
+        fixing = true
+        guard Self.rewrite(element, from: before, to: updated, done: { [weak self] in
+            restore()
+            self?.fixLanded(true)
+        }, failed: { [weak self] in
             putBack()
             self?.onRefused?(app, wanted)
+            self?.fixLanded(false)
         }) else {
             // The app would not put the cursor where the fix belongs. Nothing was changed.
+            fixing = false
+            waitingFixes = []
             putBack()
             onRefused?(app, wanted)
             return
@@ -1181,6 +1198,24 @@ final class UnderlineController {
         needsCheck = true
         lastChange = Date()
         layout(in: element)
+    }
+
+    /// One fix is in (or was refused). The next one chosen meanwhile goes in now. It waits a turn of the run
+    /// loop, because a fix that goes in at once reports back before the text it made has been taken in.
+    private func fixLanded(_ landed: Bool) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.fixing = false
+            guard landed else {
+                // After a refused fix the field is not known well enough to place more; they wait for a check.
+                self.waitingFixes = []
+                self.needsCheck = true
+                return
+            }
+            guard !self.waitingFixes.isEmpty else { return }
+            let next = self.waitingFixes.removeFirst()
+            self.perform(.apply(next.fix), on: next.issue)
+        }
     }
 
     /// Turns underlines off in the app being checked. It can be turned back on in the Library, under Writing style › By app.
