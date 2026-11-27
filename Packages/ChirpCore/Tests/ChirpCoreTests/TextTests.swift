@@ -299,3 +299,46 @@ import Testing
         #expect(LongForm.join(["Hello there. ", "", " And more."]) == "Hello there. And more.")
     }
 }
+
+@Suite struct LiveCutTests {
+    private func s(_ seconds: Double) -> Int { Int(seconds * 16_000) }
+    let cut = LiveCut()
+
+    @Test func waitsWhileThePhraseGoesOn() {
+        // Talking from 0.2 s and still talking at 3 s.
+        #expect(cut.next(speech: [s(0.2)..<s(3)], samples: s(3)) == .wait)
+    }
+
+    @Test func aPauseAfterAPhraseCutsHalfAPauseIn() {
+        // A phrase from 0.2 s to 2.5 s, then quiet for 0.6 s.
+        #expect(cut.next(speech: [s(0.2)..<s(2.5)], samples: s(3.1)) == .transcribe(upTo: s(2.5) + s(0.5) / 2))
+    }
+
+    @Test func aShortPauseIsNotTheEndOfAPhrase() {
+        #expect(cut.next(speech: [s(0.2)..<s(2.5)], samples: s(2.8)) == .wait)
+    }
+
+    @Test func tooLittleAudioWaits() {
+        // A word, then a pause, before there is enough to go on.
+        #expect(cut.next(speech: [s(0.1)..<s(0.5), s(1.2)..<s(1.6)], samples: s(1.7)) == .wait)
+    }
+
+    @Test func theLatestLongPauseWins() {
+        // Two phrases, each followed by a long pause, and a third still going: one piece up to the second pause.
+        let speech = [s(0)..<s(2), s(2.8)..<s(4.5), s(5.4)..<s(6.5)]
+        #expect(cut.next(speech: speech, samples: s(6.5)) == .transcribe(upTo: (s(4.5) + s(5.4)) / 2))
+    }
+
+    @Test func quietIsPassedOver() {
+        #expect(cut.next(speech: [], samples: s(1.5)) == .wait)
+        #expect(cut.next(speech: [], samples: s(3)) == .skip(upTo: s(2.5)))
+    }
+
+    @Test func tooLongWithoutAPauseIsCutAtTheLongestOne() {
+        // Talking for 13 s with only short breaths at 4 s and 9 s, the one at 9 s the longer.
+        let speech = [s(0)..<s(4), s(4.2)..<s(9), s(9.3)..<s(13)]
+        #expect(cut.next(speech: speech, samples: s(13)) == .transcribe(upTo: (s(9) + s(9.3)) / 2))
+        // With no break at all, it is cut at the limit.
+        #expect(cut.next(speech: [s(0)..<s(13)], samples: s(13)) == .transcribe(upTo: s(12)))
+    }
+}
