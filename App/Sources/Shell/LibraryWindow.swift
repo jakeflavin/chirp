@@ -1201,7 +1201,7 @@ struct ItemDetail: View {
             })
         }
         if item.rawText != item.body, !item.rawText.isEmpty {
-            extra.append(HeaderMenuItem(id: "raw", title: "Copy the Original Words") { TextInserter.copy(item.rawText) })
+            extra.append(HeaderMenuItem(id: "raw", title: "Copy Original Words") { TextInserter.copy(item.rawText) })
         }
         var out = header.adding(first: [HeaderAction(id: "edit", title: "Edit", symbol: "chirp.edit", help: "Fix the words") { editing = true }])
         // Its own entries after Pin and Move to Folder, before Delete.

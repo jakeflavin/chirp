@@ -203,12 +203,12 @@ struct WritePage: View {
             Button("Proofread") { run(.fix) }.disabled(empty)
                 .help("A slower, deeper check with the language model. Shows every change before you accept it.")
             Menu("Rewrite") {
-                Button("Rephrase, same tone") { run(.rephrase(.neutral)) }
-                Button("More casual") { run(.rephrase(.casual)) }
-                Button("More formal") { run(.rephrase(.formal)) }
+                Button("Rephrase, Same Tone") { run(.rephrase(.neutral)) }
+                Button("More Casual") { run(.rephrase(.casual)) }
+                Button("More Formal") { run(.rephrase(.formal)) }
                 Divider()
                 Button("Shorten") { run(.shorten) }
-                Button("Write out my notes") { run(.writeOut) }
+                Button("Write Out My Notes") { run(.writeOut) }
             }
             .fixedSize().disabled(empty)
             .accessibilityIdentifier("write.rewrite")
