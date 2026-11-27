@@ -154,6 +154,8 @@ final class ModelCenter {
     struct SummaryModel: Sendable, Equatable {
         /// The hub id.
         var id: String
+        /// The commit of the model's repository that is loaded.
+        var revision: String
         /// A LoRA adapter on the hub fused in as it loads, "repo@revision".
         var adapter: String?
         /// Asked with the prompt the adapter was trained on (`ReadController.summaryRequest`), not Chirp's own.
@@ -163,10 +165,10 @@ final class ModelCenter {
     }
 
     /// Qwen3-0.6B (8-bit) with the TLDR LoRA, the 2B's replacement for summaries on Macs that use the 2B: as
-    /// many wrong statements, in two-thirds the time and with less memory. The adapter is pinned
-    /// to the revision that was measured.
+    /// many wrong statements, in two-thirds the time and with less memory. The model and the adapter are pinned
+    /// to the revisions that were measured.
     static let tldrSummaryModel = SummaryModel(
-        id: "mlx-community/Qwen3-0.6B-8bit", adapter: "phh/Qwen3-0.6B-TLDR-Lora@0f39534202828516c2645f1aeb8c5e9e9a0f6801",
+        id: "mlx-community/Qwen3-0.6B-8bit", revision: "11de96878523501bcaa86104e3c186de07ff9068", adapter: "phh/Qwen3-0.6B-TLDR-Lora@0f39534202828516c2645f1aeb8c5e9e9a0f6801",
         tldrPrompt: true, name: "Qwen3 0.6B", downloadGB: 0.7)
 
     /// The model summaries are written with, or nil when they use the general language model. It takes the general one's
@@ -252,7 +254,8 @@ final class ModelCenter {
         languageForSummary = false
         if languageWantsSummary, let summary = Self.summaryModel {
             do {
-                try await language.load(modelID: summary.id, adapterID: summary.adapter, progress: report)
+                try await language.load(
+                    modelID: HubReference.joined(summary.id, revision: summary.revision), adapterID: summary.adapter, progress: report)
                 languageForSummary = true
                 Log.write("models", "language model for summaries: \(summary.id)\(summary.adapter.map { " + " + $0 } ?? "")")
                 return
@@ -271,7 +274,7 @@ final class ModelCenter {
                         throw ModelCenterError.noDiskSpace(size.name, size.downloadGB)
                     }
                 }
-                try await language.load(modelID: size.modelID, progress: report)
+                try await language.load(modelID: size.hubReference, progress: report)
                 return
             } catch {
                 guard let smaller = size.smaller, !(error is CancellationError) else { throw error }

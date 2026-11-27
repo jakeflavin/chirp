@@ -18,6 +18,19 @@ public enum LanguageModelSize: String, CaseIterable, Sendable, Identifiable, Cod
         }
     }
 
+    /// The commit of the model's repository that Chirp loads. Pinned so a change on the hub never reaches
+    /// a Mac unasked; moving to a newer one is a change to this table, checked like any other.
+    public var revision: String {
+        switch self {
+        case .small: "93760be4f1f69842a46bc13dbdc0f19e291392a3"
+        case .medium: "32f3e8ecf65426fc3306969496342d504bfa13f3"
+        case .large: "8b2b98c00a6b4d291155e4890773ca8f769aee53"
+        }
+    }
+
+    /// The model and its pinned commit, as the language helper is given it ("repo@revision").
+    public var hubReference: String { HubReference.joined(modelID, revision: revision) }
+
     /// The model's name as shown to the user.
     public var name: String {
         switch self {
@@ -97,5 +110,18 @@ public enum MacMemory {
     /// loaded while the user types, so it is on where the medium language model would be picked.
     public static func deepChecksEverywhereByDefault(memoryBytes: UInt64) -> Bool {
         LanguageModelSize.medium.isComfortable(memoryBytes: memoryBytes)
+    }
+}
+
+/// A Hugging Face repository with the commit to load, written "repo@revision" so it travels as one string to
+/// the language helper. Without "@" the hub's latest revision is meant.
+public enum HubReference {
+    public static func joined(_ repo: String, revision: String) -> String { repo + "@" + revision }
+
+    /// The repository and its revision, or nil for the revision when none is named.
+    public static func split(_ reference: String) -> (repo: String, revision: String?) {
+        let parts = reference.split(separator: "@", maxSplits: 1).map(String.init)
+        guard parts.count == 2, !parts[1].isEmpty else { return (parts.first ?? reference, nil) }
+        return (parts[0], parts[1])
     }
 }

@@ -53,3 +53,21 @@ import Testing
         #expect(MacMemory.wholeGigabytes(16 * gb - 1000) == 16)
     }
 }
+
+@Suite struct HubReferenceTests {
+    @Test func aReferenceSplitsIntoRepoAndRevision() {
+        let pinned = HubReference.split("mlx-community/Qwen3.5-2B-MLX-4bit@93760be4f1f69842a46bc13dbdc0f19e291392a3")
+        #expect(pinned.repo == "mlx-community/Qwen3.5-2B-MLX-4bit")
+        #expect(pinned.revision == "93760be4f1f69842a46bc13dbdc0f19e291392a3")
+        #expect(HubReference.split("BAAI/bge-small-en-v1.5").revision == nil)
+        #expect(HubReference.split("BAAI/bge-small-en-v1.5@").revision == nil)
+    }
+
+    @Test func everyLanguageSizeIsPinnedToACommit() {
+        for size in LanguageModelSize.allCases {
+            #expect(size.revision.count == 40 && size.revision.allSatisfy(\.isHexDigit), "\(size)")
+            let back = HubReference.split(size.hubReference)
+            #expect(back.repo == size.modelID && back.revision == size.revision)
+        }
+    }
+}
